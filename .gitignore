@@ -1,1 +1,4 @@
 *.xcodeproj
+/host
+*.pdf
+.*_key
