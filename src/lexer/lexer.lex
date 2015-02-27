@@ -45,9 +45,18 @@ SCHAR					[^"\n\\]
 |{ESCSEQ}
 SCHARSEQ				{SCHAR}+
 
+HCHAR					[^>\n]
+HCHARSEQ				{HCHAR}+
+
+QCHAR					[^"\n]
+QCHARSEQ				{QCHAR}+
+
 %%
 
-[ \t\n]					//skip
+/*
+*	Skip
+*/
+[ \t\n]
 
 
 /*
@@ -179,30 +188,24 @@ L\"{SCHARSEQ}?\"		C89Parser::WSTRINGLITERAL
 /*
 *	Punctuator
 */
-\.\.\.					C89Parser::TRIPLEDOTPUNC
+\.\.\.					C89Parser::PUNCTUATOR_TRIPLEDOT
 
 
 
 /*
-*	PREPROCESSOR TOKENS
+*	Preprocessor tokens
 */
 ##						C89Parser::PPOPERATOR_CONCAT
-#						C89Parser::PPDIRECTIVE
 
-/*token:
+#[a-zA-Z]				C89Parser::PPDIRECTIVE
 
-preprocessing-token:
-header-name
+\"{HCHARSEQ}\"			|
+<{QCHARSEQ}>			C89Parser::PPHEADERNAME
 
-identifier
+\.?{DIGIT}[\
+	{DIGIT}{NONDIGIT}\
+	eE{SIGN}\
+]*						C89Parser::PPNUMBER
 
-pp-number
-
-character-constant
-
-string-literal
-
-operator
-
-punctuator
-*/
+\/\*					C89Parser::PPCOMMENTSTART
+\*\/					C89Parser::PPCOMMENTEND
