@@ -1,3 +1,11 @@
-CPPFLAGS += -W -Wall -g
+LEX     = flexc++
+PGEN    = bisonc++
+objects = lexer.o parser.o CARM-Compiler.o
 
-all : compiler
+CARM-Compiler	: $(objects)
+
+lexer.o			: #parser/parser.cpp
+	cd lexer; $(LEX) lexer.lex
+
+parser.o		: C89.gr
+CARM-Compiler.o	: compiler.cpp
