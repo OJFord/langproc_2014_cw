@@ -1,0 +1,23 @@
+//
+//  C89.gr
+//  CARM-Compiler
+//
+//  Created by Ollie Ford on 26/02/2015.
+//  Copyright (c) 2015 OJFord. All rights reserved.
+//
+
+%class-name			C89Parser
+%debug
+%error-verbose
+%lsp-needed
+%target-directory	"./gen"
+
+%polymorphic
+	INT: int;
+	STRING: std::string;
+	VECT: std::vector<double>
+%type <INT> UNUM
+
+%start decl
+
+%% // Begin grammar rules
