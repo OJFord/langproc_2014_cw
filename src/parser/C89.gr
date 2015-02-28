@@ -18,6 +18,8 @@
 	VECT: std::vector<double>
 %type <INT> UNUM
 
+%include			"tokens.gr"
+
 %start decl
 
 %% // Begin grammar rules
