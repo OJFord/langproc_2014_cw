@@ -6,11 +6,12 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-%class-name			C89Parser
+%class-name						C89Parser
 %debug
 %error-verbose
 %lsp-needed
-%target-directory	"./gen"
+//bisonc++ seems to have a bug, using --target-directory instead
+//%target-directory				"./gen"
 
 %polymorphic
 	INT: int;
@@ -18,15 +19,15 @@
 	VECT: std::vector<double>
 %type <INT> UNUM
 
-%include			tokens.gr
+%include						tokens.gr
 
-%start decl
+%start							translunit
 
 %% // Begin grammar rules
 
-//%include			keywords.gr
-%include			constants.gr
-%include			expressions.gr
-%include			declarations.gr
-%include			statements.gr
-%include			externaldefs.gr
+//%include						keywords.gr
+%include						constants.gr
+%include						expressions.gr
+%include						declarations.gr
+%include						statements.gr
+%include						externaldefs.gr
