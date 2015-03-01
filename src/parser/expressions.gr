@@ -1,0 +1,176 @@
+//
+//  expressions.gr
+//  CARM-Compiler
+//
+//  Created by Ollie Ford on 01/03/2015.
+//  Copyright (c) 2015 OJFord. All rights reserved.
+//
+
+primaryexpr:
+	IDENTIFIER
+|
+	constant
+|
+	STRINGLITERAL
+|
+	LBRACKET expression RBRACKET
+
+postfixexpr:
+	primaryexpr
+|
+	postfixexpr LSQUBRACKET expr RSQUBRACKET
+|
+	postfixexpr LBRACKET RBRACKET
+|
+	postfixexpr LBRACKET argexprlist RBRACKET
+|
+	postfixexpr OPERATOR_DOT IDENTIFIER
+|
+	postfixexpr OPERATOR_PTR IDENTIFIER
+|
+	postfixexpr OPERATOR_INCR
+|
+	postfixexpr OPERATOR_DECR
+
+argexprlist:
+	assignexpr
+|
+	argexprlist COMMA assignexpr
+
+unaryexpr:
+	postfixexpr
+|
+	OPERATOR_INCR unaryexpr
+|
+	OPERATOR_DECR unaryexpr
+|
+	unaryop castexpr
+|
+	KW_SIZEOF unaryexpr
+|
+	KW_SIZEOF LBRACKET typename RBRACKET
+
+unaryop:
+	OPERATOR_BITAND
+|
+	ASTERISK
+|
+	OPERATOR_PLUS
+|
+	OPERATOR_MINUS
+|
+	OPERATOR_BITNEG
+|
+	OPERATOR_BOOLNEG
+
+castexpr:
+	unaryexpr
+|
+	LBRACKET typename RBRACKET castexpr
+
+multexpr:
+	castexpr
+|
+	multexpr ASTERISK castexpr
+|
+	multexpr OPERATOR_DIV castexpr
+|
+	multexpr OPERATOR_MOD castexpr
+
+addexpr:
+	multexpr
+|
+	addexpr OPERATOR_PLUS multexpr
+|
+	addexpr OPERATOR_MINUS multexpr
+
+shiftexpr:
+	addexpr
+|
+	shiftexpr OPERATOR_BSL addexpr
+|
+	shiftexpr OPERATOR_BSR addexpr
+
+relationalexpr:
+	shiftexpr
+|
+	relationalexpr OPERATOR_LT shiftexpr
+|
+	relationalexpr OPERATOR_GT shiftexpr
+|
+	relationalexpr OPERATOR_LTEQU shiftexpr
+|
+	relationalexpr OPERATOR_GTEQU shiftexpr
+
+equexpr:
+	relationalexpr
+|
+	equexpr OPERATOR_EQUALITY relationalexpr
+|
+	equexpr OPERATOR_NEQU relationalexpr
+
+andexpr:
+	equexpr
+|
+	andexpr OPERATOR_BITAND equexpr
+
+xorexpr:
+	andexpr
+|
+	xorexpr OPERATOR_BITXOR andexpr
+
+orexpr:
+	xorexpr
+|
+	orexpr OPERATOR_BITOR xorexpr
+
+boolandexpr:
+	orexpr
+|
+	boolandexpr OPERATOR_BOOLAND orexpr
+
+boolorexpr:
+	boolandexpr
+|
+	boolorexpr OPERATOR_BOOLOR boolandexpr
+
+condexpr:
+	boolorexpr
+|
+	boolorexpr OPERATOR_TERNARY expr COLON condexpr
+
+assignexpr:
+	condexpr
+|
+	unaryexpr assignop assignexpr
+
+assignop:
+	EQUALS
+|
+	OPERATOR_MULTEQU
+|
+	OPERATOR_DIVEQU
+|
+	OPERATOR_MODEQU
+|
+	OPERATOR_PLUSEQU
+|
+	OPERATOR_MINUSEQU
+|
+	OPERATOR_BSLEQU
+|
+	OPERATOR_BSREQU
+|
+	OPERATOR_ANDEQU
+|
+	OPERATOR_XOREQU
+|
+	OPERATOR_OREQU
+
+expr:
+	assignexpr
+|
+	expr COMMA assignexpr
+
+constexpr:
+	condexpr

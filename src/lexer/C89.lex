@@ -17,17 +17,21 @@ DIGITSEQ				{DIGIT}+
 SIGN					[+-]
 EXP						[eE]{SIGN}?{DIGITSEQ}
 FLOATSFX				[flFL]
-FRACTION				{DIGITSEQ}?\.{DIGITSEQ}|{DIGITSEQ}\.
+FRACTION				{DIGITSEQ}?\.{DIGITSEQ}|\
+						{DIGITSEQ}\.
 
 NZDIGIT					[1-9]
 ODIGIT					[0-7]
 HDIGIT					[0-9a-zA-Z]
 UNSGNDSFX				[uU]
 LONGSFX					[lL]
-INTSFX					{UNSGNDSFX}|{LONGSFX}|{UNSGNDSFX}{LONGSFX}|{LONGSFX}{UNSGNDSFX}
+INTSFX					{UNSGNDSFX}|\
+						{LONGSFX}|\
+						{UNSGNDSFX}{LONGSFX}|\
+						{LONGSFX}{UNSGNDSFX}
 
 SESCSEQ					[\'\"\?\\\a\b\f\n\r\t\v]
-OESCSEQ					\\{ODIGIT}|\\{ODIGIT}{2}|\\{ODIGIT}{3}
+OESCSEQ					\\{ODIGIT}{1,3}
 HESCSEQ					\\{HDIGIT}+
 ESCSEQ					{SESCSEQ}|{OESCSEQ}|{HESCSEQ}
 
@@ -57,38 +61,38 @@ PPNUMSEQ				{PPNUM}+
 /*
 *	Keyword
 */
-auto							|
-double							|
-int								|
-struct							|
-break							|
-else							|
-long							|
-switch							|
-case							|
-enum							|
-register						|
-typedef							|
-char							|
-extern							|
-return							|
-union							|
-const							|
-float							|
-short							|
-unsigned						|
-continue						|
-for								|
-signed							|
-void							|
-default							|
-goto							|
-sizeof							|
-volatile						|
-do								|
-if								|
-static							|
-while							C89Parser::KEYWORD
+auto							C89Parser::KW_AUTO
+double							C89Parser::KW_DOUBLE
+int								C89Parser::KW_INT
+struct							C89Parser::KW_STRUCT
+break							C89Parser::KW_BREAK
+else							C89Parser::KW_ELSE
+long							C89Parser::KW_LONG
+switch							C89Parser::KW_SWITCH
+case							C89Parser::KW_CASE
+enum							C89Parser::KW_ENUM
+register						C89Parser::KW_REGISTER
+typedef							C89Parser::KW_TYPEDEF
+char							C89Parser::KW_CHAR
+extern							C89Parser::KW_EXTERN
+return							C89Parser::KW_RETURN
+union							C89Parser::KW_UNION
+const							C89Parser::KW_CONST
+float							C89Parser::KW_FLOAT
+short							C89Parser::KW_SHORT
+unsigned						C89Parser::KW_UNSIGNED
+continue						C89Parser::KW_CONTINUE
+for								C89Parser::KW_FOR
+signed							C89Parser::KW_SIGNED
+void							C89Parser::KW_VOID
+default							C89Parser::KW_DEFAULT
+goto							C89Parser::KW_GOTO
+sizeof							C89Parser::KW_SIZEOF
+volatile						C89Parser::KW_VOLATILE
+do								C89Parser::KW_DO
+if								C89Parser::KW_IF
+static							C89Parser::KW_STATIC
+while							C89Parser::KW_WHILE
 
 
 /*
@@ -157,7 +161,7 @@ L\"{SCHARSEQ}?\"				C89Parser::WSTRINGLITERAL
 \<=								C89Parser::OPERATOR_LTEQU
 \>=								C89Parser::OPERATOR_GTEQU
 ==								C89Parser::OPERATOR_EQUALITY
-!=								C89Parser::OPERATOR_NOEQU
+!=								C89Parser::OPERATOR_NEQU
 \^								C89Parser::OPERATOR_BITXOR
 \|								C89Parser::OPERATOR_BITOR
 &&								C89Parser::OPERATOR_BOOLAND

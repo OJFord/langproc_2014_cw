@@ -1,0 +1,214 @@
+//
+//  declarations.gr
+//  CARM-Compiler
+//
+//  Created by Ollie Ford on 01/03/2015.
+//  Copyright (c) 2015 OJFord. All rights reserved.
+//
+
+decl:
+	declspec
+|
+	declspec initdecltorlist
+
+declspec:
+	storageclassspec
+|
+	storageclassspec declspec
+|
+	typespec
+|
+	typespec declspec
+|
+	typequal
+|
+	typequal declspec
+
+initdecltorlist:
+	initdecltor
+|
+	initdecltorlist COMMA initdecltor
+
+initdecltor:
+	decl
+|
+	decl EQUALS init
+
+storageclassspec:
+	KW_TYPEDEF
+|
+	KW_EXTERN
+|
+	KW_STATIC
+|
+	KW_AUTO
+|
+	KW_REGISTER
+
+typespec:
+	KW_VOID
+|
+	KW_CHAR
+|
+	KW_SHORT
+|
+	KW_INT
+|
+	KW_LONG
+|
+	KW_FLOAT
+|
+	KW_DOUBLE
+|
+	KW_SIGNED
+|
+	KW_UNSIGNED
+|
+	structunionspec
+|
+	enumspec
+|
+	typedefname
+
+structunionspec:
+	structunion LBRACE structdecllist RBRACE
+|
+	structunion IDENTIFIER LBRACE structdecllist RBRACE
+|
+	structunion IDENTIFIER
+
+structunion:
+	struct
+|
+	union
+
+structdecllist:
+	structdecl
+|
+	structdecllist structdecl
+
+structdecl:
+	specquallist structdecltorlist SCOLON
+
+specquallist:
+	typespec
+|
+	typespec specquallist
+|
+	typequal
+|
+	typequal specquallist
+
+structdecltorlist:
+	structdecltor
+|
+	structdecltorlist COMMA structdecltor
+
+structdecltor:
+	decltor
+|
+	COLON constexpr
+|
+	decltor COLON constexpr
+
+decltor:
+	directdecltor
+|
+	pointer directdeclto
+
+directdecltor:
+	IDENTIFIER
+|
+	LBRACKET decltor RBRACKET
+|
+	directdecltor LSQUBRACKET RSQUBRACKET
+|
+	directdecltor LSQUBRACKET constexpr RSQUBRACKET
+|
+	directdecltor LBRACKET paramtypelist RBRACKET
+|
+	directdecltor LBRACKET RBRACKET
+|
+	directdecltor LBRACKET identlist RBRACKET
+
+pointer:
+	ASTERISK
+|
+	ASTERISK typequallist
+|
+	ASTERISK pointer
+|
+	ASTERISK typequallist pointer
+
+typequallist:
+	typequal
+|
+	typequallist typequal
+
+paramtypelist:
+	paramlist
+|
+	paramlist COMMA PUNCTUATOR_TRIPLEDOT
+
+paramlist:
+	paramdecl
+|
+	paramlist COMMA paramdecl
+
+paramdecl:
+	declspec decltor
+|
+	declspec
+|
+	declspec abstractdecltor
+
+identlist:
+	IDENTIFIER
+|
+	identlist COMMA IDENTIFIER
+
+typename:
+	specquallist
+|
+	specquallist abstractdeltor
+
+abstractdecltor:
+	pointer
+|
+	directabstractdecltor
+|
+	pointer directabstractdecltor
+
+directabstractdecltor:
+	LBRACKET abstractdecltor RBRACKET
+|
+	LSQUBRACKET RSQUBRACKET
+|
+	directabstractdecltor LSQUBRACKET RSQUBRACKET
+|
+	LSQUBRACKET constexpr RSQUBRACKET
+|
+	directabstractdecltor LSQUBRACKET constexpr RSQUBRACKET
+|
+	LBRACKET RBRACKET
+|
+	directabstractdecltor LBRACKET RBRACKET
+|
+	LBRACKET paramtypelist RBRACKET
+|
+	directabstractdecltor LBRACKET paramtypelist RBRACKET
+
+typedefname:
+	IDENTIFIER
+
+init:
+	assignexpr
+|
+	LBRACE initlist RBRACE
+|
+	LBRACE initlist COMMA RBRACE
+
+initlist:
+	init
+|
+	initlist COMMA init

@@ -23,3 +23,7 @@
 %start decl
 
 %% // Begin grammar rules
+
+%include			"expressions.gr"
+
+%include			"declarations.gr"
