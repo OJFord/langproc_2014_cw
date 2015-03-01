@@ -1,0 +1,26 @@
+//
+//  externaldefs.gr
+//  CARM-Compiler
+//
+//  Created by Ollie Ford on 01/03/2015.
+//  Copyright (c) 2015 OJFord. All rights reserved.
+//
+
+translunit:
+	extdecl
+|
+	translunit extdecl
+
+extdecl:
+	funcdef
+|
+	decl
+
+funcdef:
+	decltor
+|
+	declspec decltor
+|
+	compoundstmt
+|
+	decllist compoundstmt

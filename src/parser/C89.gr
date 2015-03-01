@@ -27,3 +27,4 @@
 %include			"expressions.gr"
 %include			"declarations.gr"
 %include			"statements.gr"
+%include			"externaldefs.gr"
