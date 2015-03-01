@@ -10,11 +10,13 @@ translunit:
 	extdecl
 |
 	translunit extdecl
+;
 
 extdecl:
 	funcdef
 |
 	decl
+;
 
 funcdef:
 	decltor
@@ -24,3 +26,4 @@ funcdef:
 	compoundstmt
 |
 	decllist compoundstmt
+;

@@ -10,6 +10,7 @@ decl:
 	declspec
 |
 	declspec initdecltorlist
+;
 
 declspec:
 	storageclassspec
@@ -23,16 +24,19 @@ declspec:
 	typequal
 |
 	typequal declspec
+;
 
 initdecltorlist:
 	initdecltor
 |
 	initdecltorlist COMMA initdecltor
+;
 
 initdecltor:
 	decl
 |
 	decl EQUALS init
+;
 
 storageclassspec:
 	KW_TYPEDEF
@@ -44,6 +48,7 @@ storageclassspec:
 	KW_AUTO
 |
 	KW_REGISTER
+;
 
 typespec:
 	KW_VOID
@@ -69,6 +74,7 @@ typespec:
 	enumspec
 |
 	typedefname
+;
 
 structunionspec:
 	structunion LBRACE structdecllist RBRACE
@@ -76,19 +82,23 @@ structunionspec:
 	structunion IDENTIFIER LBRACE structdecllist RBRACE
 |
 	structunion IDENTIFIER
+;
 
 structunion:
 	struct
 |
 	union
+;
 
 structdecllist:
 	structdecl
 |
 	structdecllist structdecl
+;
 
 structdecl:
 	specquallist structdecltorlist SCOLON
+;
 
 specquallist:
 	typespec
@@ -98,11 +108,13 @@ specquallist:
 	typequal
 |
 	typequal specquallist
+;
 
 structdecltorlist:
 	structdecltor
 |
 	structdecltorlist COMMA structdecltor
+;
 
 structdecltor:
 	decltor
@@ -110,11 +122,13 @@ structdecltor:
 	COLON constexpr
 |
 	decltor COLON constexpr
+;
 
 decltor:
 	directdecltor
 |
-	pointer directdeclto
+	pointer directdecltor
+;
 
 directdecltor:
 	IDENTIFIER
@@ -130,6 +144,7 @@ directdecltor:
 	directdecltor LBRACKET RBRACKET
 |
 	directdecltor LBRACKET identlist RBRACKET
+;
 
 pointer:
 	ASTERISK
@@ -139,21 +154,25 @@ pointer:
 	ASTERISK pointer
 |
 	ASTERISK typequallist pointer
+;
 
 typequallist:
 	typequal
 |
 	typequallist typequal
+;
 
 paramtypelist:
 	paramlist
 |
 	paramlist COMMA PUNCTUATOR_TRIPLEDOT
+;
 
 paramlist:
 	paramdecl
 |
 	paramlist COMMA paramdecl
+;
 
 paramdecl:
 	declspec decltor
@@ -161,16 +180,19 @@ paramdecl:
 	declspec
 |
 	declspec abstractdecltor
+;
 
 identlist:
 	IDENTIFIER
 |
 	identlist COMMA IDENTIFIER
+;
 
 typename:
 	specquallist
 |
-	specquallist abstractdeltor
+	specquallist abstractdecltor
+;
 
 abstractdecltor:
 	pointer
@@ -178,6 +200,7 @@ abstractdecltor:
 	directabstractdecltor
 |
 	pointer directabstractdecltor
+;
 
 directabstractdecltor:
 	LBRACKET abstractdecltor RBRACKET
@@ -197,9 +220,11 @@ directabstractdecltor:
 	LBRACKET paramtypelist RBRACKET
 |
 	directabstractdecltor LBRACKET paramtypelist RBRACKET
+;
 
 typedefname:
 	IDENTIFIER
+;
 
 init:
 	assignexpr
@@ -207,8 +232,10 @@ init:
 	LBRACE initlist RBRACE
 |
 	LBRACE initlist COMMA RBRACE
+;
 
 initlist:
 	init
 |
 	initlist COMMA init
+;

@@ -18,6 +18,7 @@ stmt:
 	iterstmt
 |
 	jumpstmt
+;
 
 labeledstmt:
 	IDENTIFIER COLON stmt
@@ -25,6 +26,7 @@ labeledstmt:
 	KW_CASE constexpr COLON stmt
 |
 	KW_DEFAULT COLON stmt
+;
 
 compoundstmt:
 	LBRACE RBRACE
@@ -34,21 +36,25 @@ compoundstmt:
 	LBRACE stmtlist RBRACE
 |
 	LBRACE decllist stmtlist RBRACE
+;
 
 decllist:
 	decl
 |
 	decllist decl
+;
 
 stmtlist:
 	stmt
 |
 	stmtlist stmt
+;
 
 exprstmt:
 	SCOLON
 |
 	expr SCOLON
+;
 
 selectstmt:
 	KW_IF LBRACKET expr RBRACKET stmt
@@ -56,6 +62,7 @@ selectstmt:
 	KW_IF LBRACKET expr RBRACKET stmt KW_ELSE stmt
 |
 	KW_SWITCH LBRACKET expr RBRACKET stmt
+;
 
 iterstmt:
 	KW_WHILE LBRACKET expr RBRACKET stmt
@@ -77,6 +84,7 @@ iterstmt:
 	KW_FOR LBRACKET SCOLON expr SCOLON expr RBRACKET stmt
 |
 	KW_FOR LBRACKET expr SCOLON expr SCOLON expr RBRACKET stmt
+;
 
 jumpststmt:
 	KW_GOTO IDENTIFIER SCOLON
@@ -88,3 +96,4 @@ jumpststmt:
 	KW_RETURN SCOLON
 |
 	KW_RETURN expr SCOLON
+;
