@@ -6,7 +6,38 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-%token KEYWORD
+%token KW_AUTO
+%token KW_DOUBLE
+%token KW_INT
+%token KW_STRUCT
+%token KW_BREAK
+%token KW_ELSE
+%token KW_LONG
+%token KW_SWITCH
+%token KW_CASE
+%token KW_ENUM
+%token KW_REGISTER
+%token KW_TYPEDEF
+%token KW_CHAR
+%token KW_EXTERN
+%token KW_RETURN
+%token KW_UNION
+%token KW_CONST
+%token KW_FLOAT
+%token KW_SHORT
+%token KW_UNSIGNED
+%token KW_CONTINUE
+%token KW_FOR
+%token KW_SIGNED
+%token KW_VOID
+%token KW_DEFAULT
+%token KW_GOTO
+%token KW_SIZEOF
+%token KW_VOLATILE
+%token KW_DO
+%token KW_IF
+%token KW_STATIC
+%token KW_WHILE
 %token IDENTIFIER
 %token FRACCONSTANT
 %token FLOATCONSTANT
@@ -64,9 +95,3 @@
 %token OPERATOR_XOREQU
 %token OPERATOR_OREQU
 %token PUNCTUATOR_TRIPLEDOT
-%token PPOPERATOR_CONCAT
-%token PPDIRECTIVE
-%token PPHEADERNAME
-%token PPNUMBER
-%token PPCOMMENTSTART
-%token PPCOMMENTEND

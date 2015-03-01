@@ -6,49 +6,49 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-%class-name				C89Lexer
-%target-directory		"./gen"
+%class-name						C89Lexer
+%target-directory				"./gen"
 
-NONDIGIT				[_a-zA-Z]
-DIGIT					[0-9]
+NONDIGIT						[_a-zA-Z]
+DIGIT							[0-9]
 
-DIGITSEQ				{DIGIT}+
+DIGITSEQ						{DIGIT}+
 
-SIGN					[+-]
-EXP						[eE]{SIGN}?{DIGITSEQ}
-FLOATSFX				[flFL]
-FRACTION				{DIGITSEQ}?\.{DIGITSEQ}|\
-						{DIGITSEQ}\.
+SIGN							[+-]
+EXP								[eE]{SIGN}?{DIGITSEQ}
+FLOATSFX						[flFL]
+FRACTION						{DIGITSEQ}?\.{DIGITSEQ}|\
+								{DIGITSEQ}\.
 
-NZDIGIT					[1-9]
-ODIGIT					[0-7]
-HDIGIT					[0-9a-zA-Z]
-UNSGNDSFX				[uU]
-LONGSFX					[lL]
-INTSFX					{UNSGNDSFX}|\
-						{LONGSFX}|\
-						{UNSGNDSFX}{LONGSFX}|\
-						{LONGSFX}{UNSGNDSFX}
+NZDIGIT							[1-9]
+ODIGIT							[0-7]
+HDIGIT							[0-9a-zA-Z]
+UNSGNDSFX						[uU]
+LONGSFX							[lL]
+INTSFX							{UNSGNDSFX}|\
+								{LONGSFX}|\
+								{UNSGNDSFX}{LONGSFX}|\
+								{LONGSFX}{UNSGNDSFX}
 
-SESCSEQ					[\'\"\?\\\a\b\f\n\r\t\v]
-OESCSEQ					\\{ODIGIT}{1,3}
-HESCSEQ					\\{HDIGIT}+
-ESCSEQ					{SESCSEQ}|{OESCSEQ}|{HESCSEQ}
+SESCSEQ							[\'\"\?\\\a\b\f\n\r\t\v]
+OESCSEQ							\\{ODIGIT}{1,3}
+HESCSEQ							\\{HDIGIT}+
+ESCSEQ							{SESCSEQ}|{OESCSEQ}|{HESCSEQ}
 
-CCHAR					[^'\n\\]|{ESCSEQ}
-CCHARSEQ				{CCHAR}+
+CCHAR							[^'\n\\]|{ESCSEQ}
+CCHARSEQ						{CCHAR}+
 
-SCHAR					[^"\n\\]|{ESCSEQ}
-SCHARSEQ				{SCHAR}+
+SCHAR							[^"\n\\]|{ESCSEQ}
+SCHARSEQ						{SCHAR}+
 
-HCHAR					[^>\n]
-HCHARSEQ				{HCHAR}+
+HCHAR							[^>\n]
+HCHARSEQ						{HCHAR}+
 
-QCHAR					[^"\n]
-QCHARSEQ				{QCHAR}+
+QCHAR							[^"\n]
+QCHARSEQ						{QCHAR}+
 
-PPNUM					{DIGIT}|{NONDIGIT}|[eE]{SIGN}|\.
-PPNUMSEQ				{PPNUM}+
+PPNUM							{DIGIT}|{NONDIGIT}|[eE]{SIGN}|\.
+PPNUMSEQ						{PPNUM}+
 
 %%
 

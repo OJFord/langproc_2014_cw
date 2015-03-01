@@ -18,13 +18,15 @@
 	VECT: std::vector<double>
 %type <INT> UNUM
 
-%include			"tokens.gr"
+%include			tokens.gr
 
 %start decl
 
 %% // Begin grammar rules
 
-%include			"expressions.gr"
-%include			"declarations.gr"
-%include			"statements.gr"
-%include			"externaldefs.gr"
+//%include			keywords.gr
+%include			constants.gr
+%include			expressions.gr
+%include			declarations.gr
+%include			statements.gr
+%include			externaldefs.gr
