@@ -140,6 +140,7 @@ L\"{SCHARSEQ}?\"				C89Parser::WSTRINGLITERAL
 ;								C89Parser::SCOLON
 #								C89Parser::OCTOTHORPE
 
+
 /*
 *	Operator
 */
@@ -183,22 +184,3 @@ L\"{SCHARSEQ}?\"				C89Parser::WSTRINGLITERAL
 *	Punctuator
 */
 \.\.\.							C89Parser::PUNCTUATOR_TRIPLEDOT
-
-
-
-/*
-*	Preprocessor tokens
-*/
-/*
-##								C89Parser::PPOPERATOR_CONCAT
-
-#[a-zA-Z]						C89Parser::PPDIRECTIVE
-
-\"{HCHARSEQ}\"					|
-\<{QCHARSEQ}\>					C89Parser::PPHEADERNAME
-
-\.?{DIGIT}{PPNUMSEQ}?			C89Parser::PPNUMBER
-
-\/\*							C89Parser::PPCOMMENTSTART
-\*\/							C89Parser::PPCOMMENTEND
-*/
