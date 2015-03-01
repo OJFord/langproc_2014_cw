@@ -25,5 +25,5 @@
 %% // Begin grammar rules
 
 %include			"expressions.gr"
-
 %include			"declarations.gr"
+%include			"statements.gr"
