@@ -104,8 +104,6 @@ while							C89Parser::KW_WHILE
 /*
 *	Constant
 */
-{FRACTION}						C89Parser::FRACCONSTANT
-
 {FRACTION}{EXP}?{FLOATSFX}?		|
 {DIGITSEQ}{EXP}{FLOATSFX}?		C89Parser::FLOATCONSTANT
 
@@ -138,7 +136,6 @@ L\"{SCHARSEQ}?\"				C89Parser::WSTRINGLITERAL
 :								C89Parser::COLON
 =								C89Parser::EQUALS
 ;								C89Parser::SCOLON
-#								C89Parser::OCTOTHORPE
 
 
 /*

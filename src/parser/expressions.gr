@@ -11,9 +11,9 @@ primaryexpr:
 |
 	constant
 |
-	STRINGLITERAL
+	stringliteral
 |
-	LBRACKET expression RBRACKET
+	LBRACKET expr RBRACKET
 ;
 
 postfixexpr:

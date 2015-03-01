@@ -86,7 +86,7 @@ iterstmt:
 	KW_FOR LBRACKET expr SCOLON expr SCOLON expr RBRACKET stmt
 ;
 
-jumpststmt:
+jumpstmt:
 	KW_GOTO IDENTIFIER SCOLON
 |
 	KW_CONTINUE SCOLON

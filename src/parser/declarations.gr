@@ -84,10 +84,30 @@ structunionspec:
 	structunion IDENTIFIER
 ;
 
-structunion:
-	struct
+enumspec:
+	KW_ENUM LBRACE enumtorlist RBRACE
 |
-	union
+	KW_ENUM IDENTIFIER LBRACE enumtorlist RBRACE
+|
+	KW_ENUM IDENTIFIER
+;
+
+enumtorlist:
+	enumtor
+|
+	enumtorlist COMMA enumtor
+;
+
+enumtor:
+	enumconst
+|
+	enumconst EQUALS constexpr
+;
+
+structunion:
+	KW_STRUCT
+|
+	KW_UNION
 ;
 
 structdecllist:
@@ -160,6 +180,12 @@ typequallist:
 	typequal
 |
 	typequallist typequal
+;
+
+typequal:
+	KW_CONST
+|
+	KW_VOLATILE
 ;
 
 paramtypelist:

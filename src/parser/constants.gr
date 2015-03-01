@@ -7,20 +7,34 @@
 //
 
 constant:
-	FRACCONSTANT
-|
 	FLOATCONSTANT
 |
+	intconst
+|
+	enumconst
+|
+	charconst
+;
+
+intconst:
 	DECCONSTANT
 |
 	OCTCONSTANT
 |
 	HEXCONSTANT
-|
+;
+
+enumconst:
+	IDENTIFIER
+;
+
+charconst:
 	CHARCONSTANT
 |
 	WCHARCONSTANT
-|
+;
+
+stringliteral:
 	STRINGLITERAL
 |
 	WSTRINGLITERAL
