@@ -7,5 +7,7 @@ CARM-Compiler	: $(objects)
 lexer.o			: #parser/parser.cpp
 	cd lexer; $(LEX) lexer.lex
 
-parser.o		: C89.gr
+parser.o		: lexer.o
+	cd parser; $(PGEN) C89.gr
+
 CARM-Compiler.o	: compiler.cpp
