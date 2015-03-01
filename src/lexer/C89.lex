@@ -127,8 +127,8 @@ L\"{SCHARSEQ}?\"				C89Parser::WSTRINGLITERAL
 /*
 *	Operator or punctuator
 */
-\[								C89Parser::LSQBRACKET
-\]								C89Parser::RSQBRACKET
+\[								C89Parser::LSQUBRACKET
+\]								C89Parser::RSQUBRACKET
 \(								C89Parser::LBRACKET
 \)								C89Parser::RBRACKET
 \{								C89Parser::LBRACE
