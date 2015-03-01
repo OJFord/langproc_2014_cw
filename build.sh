@@ -5,3 +5,5 @@ ssh -p 55555 root@localhost << ENDCMDS
 cd ~/CARM/src
 make parser.o
 ENDCMDS
+scp -r -i ~/.ssh/id_armrsa -P 55555 root@localhost:~/CARM/src/lexer/gen/* ./src/lexer/gen/
+scp -r -i ~/.ssh/id_armrsa -P 55555 root@localhost:~/CARM/src/parser/gen/* ./src/parser/gen/
