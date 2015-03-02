@@ -6,11 +6,9 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-//#include "parser/C89Parser.h"
 #include "parser/Parser.h"
 
 int main(){
-	//C89Parser parser;
 	Parser parser;
 	parser.parse();
 }
