@@ -6,12 +6,12 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-%class-name						C89Parser
 %debug
 %error-verbose
 %lsp-needed
-//bisonc++ seems to have a bug, using --target-directory instead
-//%target-directory				"./gen"
+
+%scanner						../lexer/Scanner.h
+%scanner-token-function			d_scanner.lex()
 
 %polymorphic
 	INT: int;
@@ -21,11 +21,11 @@
 
 %include						tokens.gr
 
-%start							translunit
+%start							translation_unit
 
 %% // Begin grammar rules
 
-//%include						keywords.gr
+%include						keywords.gr
 %include						constants.gr
 %include						expressions.gr
 %include						declarations.gr

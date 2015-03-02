@@ -1,44 +1,44 @@
 //
-//  declarations.gr
+//  declarationarations.gr
 //  CARM-Compiler
 //
 //  Created by Ollie Ford on 01/03/2015.
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-decl:
-	declspec
+declaration:
+	declaration_specifiers
 |
-	declspec initdecltorlist
+	declaration_specifiers initialiser_declarator_list
 ;
 
-declspec:
-	storageclassspec
+declaration_specifiers:
+	storage_class_specifier
 |
-	storageclassspec declspec
+	storage_class_specifier declaration_specifiers
 |
-	typespec
+	type_specifier
 |
-	typespec declspec
+	type_specifier declaration_specifiers
 |
-	typequal
+	type_qualifier
 |
-	typequal declspec
+	type_qualifier declaration_specifiers
 ;
 
-initdecltorlist:
-	initdecltor
+initialiser_declarator_list:
+	initialiser_declarator
 |
-	initdecltorlist COMMA initdecltor
+	initialiser_declarator_list COMMA initialiser_declarator
 ;
 
-initdecltor:
-	decl
+initialiser_declarator:
+	declaration
 |
-	decl EQUALS init
+	declaration EQUALS initialiser
 ;
 
-storageclassspec:
+storage_class_specifier:
 	KW_TYPEDEF
 |
 	KW_EXTERN
@@ -50,7 +50,7 @@ storageclassspec:
 	KW_REGISTER
 ;
 
-typespec:
+type_specifier:
 	KW_VOID
 |
 	KW_CHAR
@@ -69,199 +69,199 @@ typespec:
 |
 	KW_UNSIGNED
 |
-	structunionspec
+	struct_union_specifier
 |
-	enumspec
+	enum_specifier
 |
-	typedefname
+	typedef_name
 ;
 
-structunionspec:
-	structunion LBRACE structdecllist RBRACE
+struct_union_specifier:
+	struct_union LBRACE struct_declaration_list RBRACE
 |
-	structunion IDENTIFIER LBRACE structdecllist RBRACE
+	struct_union IDENTIFIER LBRACE struct_declaration_list RBRACE
 |
-	structunion IDENTIFIER
+	struct_union IDENTIFIER
 ;
 
-enumspec:
-	KW_ENUM LBRACE enumtorlist RBRACE
-|
-	KW_ENUM IDENTIFIER LBRACE enumtorlist RBRACE
-|
-	KW_ENUM IDENTIFIER
-;
-
-enumtorlist:
-	enumtor
-|
-	enumtorlist COMMA enumtor
-;
-
-enumtor:
-	enumconst
-|
-	enumconst EQUALS constexpr
-;
-
-structunion:
+struct_union:
 	KW_STRUCT
 |
 	KW_UNION
 ;
 
-structdecllist:
-	structdecl
+struct_declaration_list:
+	struct_declaration
 |
-	structdecllist structdecl
+	struct_declaration_list struct_declaration
 ;
 
-structdecl:
-	specquallist structdecltorlist SCOLON
+struct_declaration:
+	spec_qualifier_list struct_declarator_list SCOLON
 ;
 
-specquallist:
-	typespec
+spec_qualifier_list:
+	type_specifier
 |
-	typespec specquallist
+	type_specifier spec_qualifier_list
 |
-	typequal
+	type_qualifier
 |
-	typequal specquallist
+	type_qualifier spec_qualifier_list
 ;
 
-structdecltorlist:
-	structdecltor
+struct_declarator_list:
+	struct_declarator
 |
-	structdecltorlist COMMA structdecltor
+	struct_declarator_list COMMA struct_declarator
 ;
 
-structdecltor:
-	decltor
+struct_declarator:
+	declarator
 |
-	COLON constexpr
+	COLON constant_expr
 |
-	decltor COLON constexpr
+	declarator COLON constant_expr
 ;
 
-decltor:
-	directdecltor
+enum_specifier:
+	KW_ENUM LBRACE enumerator_list RBRACE
 |
-	pointer directdecltor
+	KW_ENUM IDENTIFIER LBRACE enumerator_list RBRACE
+|
+	KW_ENUM IDENTIFIER
 ;
 
-directdecltor:
-	IDENTIFIER
+enumerator_list:
+	enumerator
 |
-	LBRACKET decltor RBRACKET
-|
-	directdecltor LSQUBRACKET RSQUBRACKET
-|
-	directdecltor LSQUBRACKET constexpr RSQUBRACKET
-|
-	directdecltor LBRACKET paramtypelist RBRACKET
-|
-	directdecltor LBRACKET RBRACKET
-|
-	directdecltor LBRACKET identlist RBRACKET
+	enumerator_list COMMA enumerator
 ;
 
-pointer:
-	ASTERISK
+enumerator:
+	enumeration_constant
 |
-	ASTERISK typequallist
-|
-	ASTERISK pointer
-|
-	ASTERISK typequallist pointer
+	enumeration_constant EQUALS constant_expr
 ;
 
-typequallist:
-	typequal
-|
-	typequallist typequal
-;
-
-typequal:
+type_qualifier:
 	KW_CONST
 |
 	KW_VOLATILE
 ;
 
-paramtypelist:
-	paramlist
+declarator:
+	direct_declarator
 |
-	paramlist COMMA PUNCTUATOR_TRIPLEDOT
+	pointer direct_declarator
 ;
 
-paramlist:
-	paramdecl
-|
-	paramlist COMMA paramdecl
-;
-
-paramdecl:
-	declspec decltor
-|
-	declspec
-|
-	declspec abstractdecltor
-;
-
-identlist:
+direct_declarator:
 	IDENTIFIER
 |
-	identlist COMMA IDENTIFIER
-;
-
-typename:
-	specquallist
+	LBRACKET declarator RBRACKET
 |
-	specquallist abstractdecltor
+	direct_declarator LSQUBRACKET RSQUBRACKET
+|
+	direct_declarator LSQUBRACKET constant_expr RSQUBRACKET
+|
+	direct_declarator LBRACKET param_type_list RBRACKET
+|
+	direct_declarator LBRACKET RBRACKET
+|
+	direct_declarator LBRACKET identifier_list RBRACKET
 ;
 
-abstractdecltor:
+pointer:
+	ASTERISK
+|
+	ASTERISK type_qualifier_list
+|
+	ASTERISK pointer
+|
+	ASTERISK type_qualifier_list pointer
+;
+
+type_qualifier_list:
+	type_qualifier
+|
+	type_qualifier_list type_qualifier
+;
+
+param_type_list:
+	param_list
+|
+	param_list COMMA PUNCTUATOR_TRIPLEDOT
+;
+
+param_list:
+	param_declaration
+|
+	param_list COMMA param_declaration
+;
+
+param_declaration:
+	declaration_specifiers declarator
+|
+	declaration_specifiers
+|
+	declaration_specifiers abstract_declarator
+;
+
+identifier_list:
+	IDENTIFIER
+|
+	identifier_list COMMA IDENTIFIER
+;
+
+type_name:
+	spec_qualifier_list
+|
+	spec_qualifier_list abstract_declarator
+;
+
+abstract_declarator:
 	pointer
 |
-	directabstractdecltor
+	direct_abstract_declarator
 |
-	pointer directabstractdecltor
+	pointer direct_abstract_declarator
 ;
 
-directabstractdecltor:
-	LBRACKET abstractdecltor RBRACKET
+direct_abstract_declarator:
+	LBRACKET abstract_declarator RBRACKET
 |
 	LSQUBRACKET RSQUBRACKET
 |
-	directabstractdecltor LSQUBRACKET RSQUBRACKET
+	direct_abstract_declarator LSQUBRACKET RSQUBRACKET
 |
-	LSQUBRACKET constexpr RSQUBRACKET
+	LSQUBRACKET constant_expr RSQUBRACKET
 |
-	directabstractdecltor LSQUBRACKET constexpr RSQUBRACKET
+	direct_abstract_declarator LSQUBRACKET constant_expr RSQUBRACKET
 |
 	LBRACKET RBRACKET
 |
-	directabstractdecltor LBRACKET RBRACKET
+	direct_abstract_declarator LBRACKET RBRACKET
 |
-	LBRACKET paramtypelist RBRACKET
+	LBRACKET param_type_list RBRACKET
 |
-	directabstractdecltor LBRACKET paramtypelist RBRACKET
+	direct_abstract_declarator LBRACKET param_type_list RBRACKET
 ;
 
-typedefname:
+typedef_name:
 	IDENTIFIER
 ;
 
-init:
-	assignexpr
+initialiser:
+	assignment_expr
 |
-	LBRACE initlist RBRACE
+	LBRACE initialiser_list RBRACE
 |
-	LBRACE initlist COMMA RBRACE
+	LBRACE initialiser_list COMMA RBRACE
 ;
 
-initlist:
-	init
+initialiser_list:
+	initialiser
 |
-	initlist COMMA init
+	initialiser_list COMMA initialiser
 ;

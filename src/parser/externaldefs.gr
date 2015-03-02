@@ -6,24 +6,24 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-translunit:
-	extdecl
+translation_unit:
+	external_declaration
 |
-	translunit extdecl
+	translation_unit external_declaration
 ;
 
-extdecl:
-	funcdef
+external_declaration:
+	function_definition
 |
-	decl
+	declaration
 ;
 
-funcdef:
-	decltor
+function_definition:
+	declarator
 |
-	declspec decltor
+	declaration_specifiers declarator
 |
-	compoundstmt
+	compound_stmt
 |
-	decllist compoundstmt
+	declaration_list compound_stmt
 ;

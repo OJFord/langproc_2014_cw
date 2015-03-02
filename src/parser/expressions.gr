@@ -1,60 +1,60 @@
 //
-//  expressions.gr
+//  exprs.gr
 //  CARM-Compiler
 //
 //  Created by Ollie Ford on 01/03/2015.
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-primaryexpr:
+primary_expr:
 	IDENTIFIER
 |
 	constant
 |
-	stringliteral
+	string_literal
 |
 	LBRACKET expr RBRACKET
 ;
 
-postfixexpr:
-	primaryexpr
+postfix_expr:
+	primary_expr
 |
-	postfixexpr LSQUBRACKET expr RSQUBRACKET
+	postfix_expr LSQUBRACKET expr RSQUBRACKET
 |
-	postfixexpr LBRACKET RBRACKET
+	postfix_expr LBRACKET RBRACKET
 |
-	postfixexpr LBRACKET argexprlist RBRACKET
+	postfix_expr LBRACKET arg_expr_list RBRACKET
 |
-	postfixexpr OPERATOR_DOT IDENTIFIER
+	postfix_expr OPERATOR_DOT IDENTIFIER
 |
-	postfixexpr OPERATOR_PTR IDENTIFIER
+	postfix_expr OPERATOR_PTR IDENTIFIER
 |
-	postfixexpr OPERATOR_INCR
+	postfix_expr OPERATOR_INCR
 |
-	postfixexpr OPERATOR_DECR
+	postfix_expr OPERATOR_DECR
 ;
 
-argexprlist:
-	assignexpr
+arg_expr_list:
+	assignment_expr
 |
-	argexprlist COMMA assignexpr
+	arg_expr_list COMMA assignment_expr
 ;
 
-unaryexpr:
-	postfixexpr
+unary_expr:
+	postfix_expr
 |
-	OPERATOR_INCR unaryexpr
+	OPERATOR_INCR unary_expr
 |
-	OPERATOR_DECR unaryexpr
+	OPERATOR_DECR unary_expr
 |
-	unaryop castexpr
+	unary_operation cast_expr
 |
-	KW_SIZEOF unaryexpr
+	KW_SIZEOF unary_expr
 |
-	KW_SIZEOF LBRACKET typename RBRACKET
+	KW_SIZEOF LBRACKET type_name RBRACKET
 ;
 
-unaryop:
+unary_operation:
 	OPERATOR_BITAND
 |
 	ASTERISK
@@ -68,101 +68,101 @@ unaryop:
 	OPERATOR_BOOLNEG
 ;
 
-castexpr:
-	unaryexpr
+cast_expr:
+	unary_expr
 |
-	LBRACKET typename RBRACKET castexpr
+	LBRACKET type_name RBRACKET cast_expr
 ;
 
-multexpr:
-	castexpr
+multiplicative_expr:
+	cast_expr
 |
-	multexpr ASTERISK castexpr
+	multiplicative_expr ASTERISK cast_expr
 |
-	multexpr OPERATOR_DIV castexpr
+	multiplicative_expr OPERATOR_DIV cast_expr
 |
-	multexpr OPERATOR_MOD castexpr
+	multiplicative_expr OPERATOR_MOD cast_expr
 ;
 
-addexpr:
-	multexpr
+additive_expr:
+	multiplicative_expr
 |
-	addexpr OPERATOR_PLUS multexpr
+	additive_expr OPERATOR_PLUS multiplicative_expr
 |
-	addexpr OPERATOR_MINUS multexpr
+	additive_expr OPERATOR_MINUS multiplicative_expr
 ;
 
-shiftexpr:
-	addexpr
+shift_expr:
+	additive_expr
 |
-	shiftexpr OPERATOR_BSL addexpr
+	shift_expr OPERATOR_BSL additive_expr
 |
-	shiftexpr OPERATOR_BSR addexpr
+	shift_expr OPERATOR_BSR additive_expr
 ;
 
-relationalexpr:
-	shiftexpr
+relational_expr:
+	shift_expr
 |
-	relationalexpr OPERATOR_LT shiftexpr
+	relational_expr OPERATOR_LT shift_expr
 |
-	relationalexpr OPERATOR_GT shiftexpr
+	relational_expr OPERATOR_GT shift_expr
 |
-	relationalexpr OPERATOR_LTEQU shiftexpr
+	relational_expr OPERATOR_LTEQU shift_expr
 |
-	relationalexpr OPERATOR_GTEQU shiftexpr
+	relational_expr OPERATOR_GTEQU shift_expr
 ;
 
-equexpr:
-	relationalexpr
+equality_expr:
+	relational_expr
 |
-	equexpr OPERATOR_EQUALITY relationalexpr
+	equality_expr OPERATOR_EQUALITY relational_expr
 |
-	equexpr OPERATOR_NEQU relationalexpr
+	equality_expr OPERATOR_NEQU relational_expr
 ;
 
-andexpr:
-	equexpr
+and_expr:
+	equality_expr
 |
-	andexpr OPERATOR_BITAND equexpr
+	and_expr OPERATOR_BITAND equality_expr
 ;
 
-xorexpr:
-	andexpr
+xor_expr:
+	and_expr
 |
-	xorexpr OPERATOR_BITXOR andexpr
+	xor_expr OPERATOR_BITXOR and_expr
 ;
 
-orexpr:
-	xorexpr
+or_expr:
+	xor_expr
 |
-	orexpr OPERATOR_BITOR xorexpr
+	or_expr OPERATOR_BITOR xor_expr
 ;
 
-boolandexpr:
-	orexpr
+logical_and_expr:
+	or_expr
 |
-	boolandexpr OPERATOR_BOOLAND orexpr
+	logical_and_expr OPERATOR_BOOLAND or_expr
 ;
 
-boolorexpr:
-	boolandexpr
+logical_or_expr:
+	logical_and_expr
 |
-	boolorexpr OPERATOR_BOOLOR boolandexpr
+	logical_or_expr OPERATOR_BOOLOR logical_and_expr
 ;
 
-condexpr:
-	boolorexpr
+conditional_expr:
+	logical_or_expr
 |
-	boolorexpr OPERATOR_TERNARY expr COLON condexpr
+	logical_or_expr OPERATOR_TERNARY expr COLON conditional_expr
 ;
 
-assignexpr:
-	condexpr
+assignment_expr:
+	conditional_expr
 |
-	unaryexpr assignop assignexpr
+	unary_expr assignment_operator assignment_expr
 ;
 
-assignop:
+assignment_operator:
 	EQUALS
 |
 	OPERATOR_MULTEQU
@@ -187,11 +187,11 @@ assignop:
 ;
 
 expr:
-	assignexpr
+	assignment_expr
 |
-	expr COMMA assignexpr
+	expr COMMA assignment_expr
 ;
 
-constexpr:
-	condexpr
+constant_expr:
+	conditional_expr
 ;

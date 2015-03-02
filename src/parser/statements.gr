@@ -1,62 +1,62 @@
 //
 //  statements.gr
-//  CARM-Compiler
+//  CARM_Compiler
 //
 //  Created by Ollie Ford on 01/03/2015.
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
 stmt:
-	labeledstmt
+	labeled_stmt
 |
-	compoundstmt
+	compound_stmt
 |
-	exprstmt
+	expr_stmt
 |
-	selectstmt
+	select_stmt
 |
-	iterstmt
+	iter_stmt
 |
-	jumpstmt
+	jump_stmt
 ;
 
-labeledstmt:
+labeled_stmt:
 	IDENTIFIER COLON stmt
 |
-	KW_CASE constexpr COLON stmt
+	KW_CASE constant_expr COLON stmt
 |
 	KW_DEFAULT COLON stmt
 ;
 
-compoundstmt:
+compound_stmt:
 	LBRACE RBRACE
 |
-	LBRACE decllist RBRACE
+	LBRACE declaration_list RBRACE
 |
-	LBRACE stmtlist RBRACE
+	LBRACE stmt_list RBRACE
 |
-	LBRACE decllist stmtlist RBRACE
+	LBRACE declaration_list stmt_list RBRACE
 ;
 
-decllist:
-	decl
+declaration_list:
+	declaration
 |
-	decllist decl
+	declaration_list declaration
 ;
 
-stmtlist:
+stmt_list:
 	stmt
 |
-	stmtlist stmt
+	stmt_list stmt
 ;
 
-exprstmt:
+expr_stmt:
 	SCOLON
 |
 	expr SCOLON
 ;
 
-selectstmt:
+select_stmt:
 	KW_IF LBRACKET expr RBRACKET stmt
 |
 	KW_IF LBRACKET expr RBRACKET stmt KW_ELSE stmt
@@ -64,7 +64,7 @@ selectstmt:
 	KW_SWITCH LBRACKET expr RBRACKET stmt
 ;
 
-iterstmt:
+iter_stmt:
 	KW_WHILE LBRACKET expr RBRACKET stmt
 |
 	KW_DO stmt KW_WHILE LBRACKET expr RBRACKET SCOLON
@@ -86,7 +86,7 @@ iterstmt:
 	KW_FOR LBRACKET expr SCOLON expr SCOLON expr RBRACKET stmt
 ;
 
-jumpstmt:
+jump_stmt:
 	KW_GOTO IDENTIFIER SCOLON
 |
 	KW_CONTINUE SCOLON

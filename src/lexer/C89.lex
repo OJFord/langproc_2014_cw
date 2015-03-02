@@ -6,9 +6,6 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-%class-name						C89Lexer
-%target-directory				"./gen"
-
 NONDIGIT						[_a-zA-Z]
 DIGIT							[0-9]
 
@@ -17,18 +14,14 @@ DIGITSEQ						{DIGIT}+
 SIGN							[+-]
 EXP								[eE]{SIGN}?{DIGITSEQ}
 FLOATSFX						[flFL]
-FRACTION						{DIGITSEQ}?\.{DIGITSEQ}|\
-								{DIGITSEQ}\.
+FRACTION						{DIGITSEQ}?\.{DIGITSEQ}|{DIGITSEQ}\.
 
 NZDIGIT							[1-9]
 ODIGIT							[0-7]
 HDIGIT							[0-9a-zA-Z]
 UNSGNDSFX						[uU]
 LONGSFX							[lL]
-INTSFX							{UNSGNDSFX}|\
-								{LONGSFX}|\
-								{UNSGNDSFX}{LONGSFX}|\
-								{LONGSFX}{UNSGNDSFX}
+INTSFX							{UNSGNDSFX}{LONGSFX}?|{LONGSFX}{UNSGNDSFX}?
 
 SESCSEQ							[\'\"\?\\\a\b\f\n\r\t\v]
 OESCSEQ							\\{ODIGIT}{1,3}
@@ -61,123 +54,118 @@ PPNUMSEQ						{PPNUM}+
 /*
 *	Keyword
 */
-auto							C89Parser::KW_AUTO
-double							C89Parser::KW_DOUBLE
-int								C89Parser::KW_INT
-struct							C89Parser::KW_STRUCT
-break							C89Parser::KW_BREAK
-else							C89Parser::KW_ELSE
-long							C89Parser::KW_LONG
-switch							C89Parser::KW_SWITCH
-case							C89Parser::KW_CASE
-enum							C89Parser::KW_ENUM
-register						C89Parser::KW_REGISTER
-typedef							C89Parser::KW_TYPEDEF
-char							C89Parser::KW_CHAR
-extern							C89Parser::KW_EXTERN
-return							C89Parser::KW_RETURN
-union							C89Parser::KW_UNION
-const							C89Parser::KW_CONST
-float							C89Parser::KW_FLOAT
-short							C89Parser::KW_SHORT
-unsigned						C89Parser::KW_UNSIGNED
-continue						C89Parser::KW_CONTINUE
-for								C89Parser::KW_FOR
-signed							C89Parser::KW_SIGNED
-void							C89Parser::KW_VOID
-default							C89Parser::KW_DEFAULT
-goto							C89Parser::KW_GOTO
-sizeof							C89Parser::KW_SIZEOF
-volatile						C89Parser::KW_VOLATILE
-do								C89Parser::KW_DO
-if								C89Parser::KW_IF
-static							C89Parser::KW_STATIC
-while							C89Parser::KW_WHILE
+auto							return Parser::KW_AUTO;
+double							return Parser::KW_DOUBLE;
+int								return Parser::KW_INT;
+struct							return Parser::KW_STRUCT;
+break							return Parser::KW_BREAK;
+else							return Parser::KW_ELSE;
+long							return Parser::KW_LONG;
+switch							return Parser::KW_SWITCH;
+case							return Parser::KW_CASE;
+enum							return Parser::KW_ENUM;
+register						return Parser::KW_REGISTER;
+typedef							return Parser::KW_TYPEDEF;
+char							return Parser::KW_CHAR;
+extern							return Parser::KW_EXTERN;
+return							return Parser::KW_RETURN;
+union							return Parser::KW_UNION;
+const							return Parser::KW_CONST;
+float							return Parser::KW_FLOAT;
+short							return Parser::KW_SHORT;
+unsigned						return Parser::KW_UNSIGNED;
+continue						return Parser::KW_CONTINUE;
+for								return Parser::KW_FOR;
+signed							return Parser::KW_SIGNED;
+void							return Parser::KW_VOID;
+default							return Parser::KW_DEFAULT;
+goto							return Parser::KW_GOTO;
+sizeof							return Parser::KW_SIZEOF;
+volatile						return Parser::KW_VOLATILE;
+do								return Parser::KW_DO;
+if								return Parser::KW_IF;
+static							return Parser::KW_STATIC;
+while							return Parser::KW_WHILE;
 
 
 /*
 *	Identifier
 */
-{NONDIGIT}{NONDIGIT}+{DIGIT}*	C89Parser::IDENTIFIER
+{NONDIGIT}{NONDIGIT}+{DIGIT}*	return Parser::IDENTIFIER;
 
 
 /*
 *	Constant
 */
 {FRACTION}{EXP}?{FLOATSFX}?		|
-{DIGITSEQ}{EXP}{FLOATSFX}?		C89Parser::FLOATCONSTANT
+{DIGITSEQ}{EXP}{FLOATSFX}?		return Parser::FLOATCONSTANT;
+{NZDIGIT}{DIGIT}*{INTSFX}?		return Parser::DECCONSTANT;
+0{ODIGIT}+{INTSFX}?				return Parser::OCTCONSTANT;
+0[xX]{HDIGIT}+{INTSFX}?			return Parser::HEXCONSTANT;
 
-{NZDIGIT}{DIGIT}*{INTSFX}?		C89Parser::DECCONSTANT
+\'{CCHARSEQ}\'					return Parser::CHARCONSTANT;
+L\'{CCHARSEQ}\'					return Parser::WCHARCONSTANT;
 
-0{ODIGIT}+{INTSFX}?				C89Parser::OCTCONSTANT
-
-0[xX]{HDIGIT}+{INTSFX}?			C89Parser::HEXCONSTANT
-
-\'{CCHARSEQ}\'					C89Parser::CHARCONSTANT
-
-L\'{CCHARSEQ}\'					C89Parser::WCHARCONSTANT
-
-\"{SCHARSEQ}?\"					C89Parser::STRINGLITERAL
-
-L\"{SCHARSEQ}?\"				C89Parser::WSTRINGLITERAL
+\"{SCHARSEQ}?\"					return Parser::STRINGLITERAL;
+L\"{SCHARSEQ}?\"				return Parser::WSTRINGLITERAL;
 
 
 /*
 *	Operator or punctuator
 */
-\[								C89Parser::LSQUBRACKET
-\]								C89Parser::RSQUBRACKET
-\(								C89Parser::LBRACKET
-\)								C89Parser::RBRACKET
-\{								C89Parser::LBRACE
-\}								C89Parser::RBRACE
-\*								C89Parser::ASTERISK
-,								C89Parser::COMMA
-:								C89Parser::COLON
-=								C89Parser::EQUALS
-;								C89Parser::SCOLON
+\[								return Parser::LSQUBRACKET;
+\]								return Parser::RSQUBRACKET;
+\(								return Parser::LBRACKET;
+\)								return Parser::RBRACKET;
+\{								return Parser::LBRACE;
+\}								return Parser::RBRACE;
+\*								return Parser::ASTERISK;
+,								return Parser::COMMA;
+:								return Parser::COLON;
+=								return Parser::EQUALS;
+;								return Parser::SCOLON;
 
 
 /*
 *	Operator
 */
-\.								C89Parser::OPERATOR_DOT
--\>								C89Parser::OPERATOR_PTR
-\+\+							C89Parser::OPERATOR_INCR
---								C89Parser::OPERATOR_DECR
-&								C89Parser::OPERATOR_BITAND
-\+								C89Parser::OPERATOR_PLUS
--								C89Parser::OPERATOR_MINUS
-~								C89Parser::OPERATOR_BITNEG
-!								C89Parser::OPERATOR_BOOLNEG
-\/								C89Parser::OPERATOR_DIV
-%								C89Parser::OPERATOR_MOD
-\<\<							C89Parser::OPERATOR_BSL
-\>\>							C89Parser::OPERATOR_BSR
-\<								C89Parser::OPERATOR_LT
-\>								C89Parser::OPERATOR_GT
-\<=								C89Parser::OPERATOR_LTEQU
-\>=								C89Parser::OPERATOR_GTEQU
-==								C89Parser::OPERATOR_EQUALITY
-!=								C89Parser::OPERATOR_NEQU
-\^								C89Parser::OPERATOR_BITXOR
-\|								C89Parser::OPERATOR_BITOR
-&&								C89Parser::OPERATOR_BOOLAND
-\|\|							C89Parser::OPERATOR_BOOLOR
-\?								C89Parser::OPERATOR_TERNARY
-\*=								C89Parser::OPERATOR_MULTEQU
-\/=								C89Parser::OPERATOR_DIVEQU
-%=								C89Parser::OPERATOR_MODEQU
-\+=								C89Parser::OPERATOR_PLUSEQU
--=								C89Parser::OPERATOR_MINUSEQU
-\<\<=							C89Parser::OPERATOR_BSLEQU
-\>\>=							C89Parser::OPERATOR_BSREQU
-&=								C89Parser::OPERATOR_ANDEQU
-\^=								C89Parser::OPERATOR_XOREQU
-\|=								C89Parser::OPERATOR_OREQU
+\.								return Parser::OPERATOR_DOT;
+-\>								return Parser::OPERATOR_PTR;
+\+\+							return Parser::OPERATOR_INCR;
+--								return Parser::OPERATOR_DECR;
+&								return Parser::OPERATOR_BITAND;
+\+								return Parser::OPERATOR_PLUS;
+-								return Parser::OPERATOR_MINUS;
+~								return Parser::OPERATOR_BITNEG;
+!								return Parser::OPERATOR_BOOLNEG;
+\/								return Parser::OPERATOR_DIV;
+%								return Parser::OPERATOR_MOD;
+\<\<							return Parser::OPERATOR_BSL;
+\>\>							return Parser::OPERATOR_BSR;
+\<								return Parser::OPERATOR_LT;
+\>								return Parser::OPERATOR_GT;
+\<=								return Parser::OPERATOR_LTEQU;
+\>=								return Parser::OPERATOR_GTEQU;
+==								return Parser::OPERATOR_EQUALITY;
+!=								return Parser::OPERATOR_NEQU;
+\^								return Parser::OPERATOR_BITXOR;
+\|								return Parser::OPERATOR_BITOR;
+&&								return Parser::OPERATOR_BOOLAND;
+\|\|							return Parser::OPERATOR_BOOLOR;
+\?								return Parser::OPERATOR_TERNARY;
+\*=								return Parser::OPERATOR_MULTEQU;
+\/=								return Parser::OPERATOR_DIVEQU;
+%=								return Parser::OPERATOR_MODEQU;
+\+=								return Parser::OPERATOR_PLUSEQU;
+-=								return Parser::OPERATOR_MINUSEQU;
+\<\<=							return Parser::OPERATOR_BSLEQU;
+\>\>=							return Parser::OPERATOR_BSREQU;
+&=								return Parser::OPERATOR_ANDEQU;
+\^=								return Parser::OPERATOR_XOREQU;
+\|=								return Parser::OPERATOR_OREQU;
 
 
 /*
 *	Punctuator
 */
-\.\.\.							C89Parser::PUNCTUATOR_TRIPLEDOT
+\.\.\.							return Parser::PUNCTUATOR_TRIPLEDOT;

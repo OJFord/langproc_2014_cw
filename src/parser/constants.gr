@@ -7,16 +7,20 @@
 //
 
 constant:
-	FLOATCONSTANT
+	floating_constant
 |
-	intconst
+	integer_constant
 |
-	enumconst
+	enumeration_constant
 |
-	charconst
+	character_constant
 ;
 
-intconst:
+floating_constant:
+	FLOATCONSTANT
+;
+
+integer_constant:
 	DECCONSTANT
 |
 	OCTCONSTANT
@@ -24,17 +28,17 @@ intconst:
 	HEXCONSTANT
 ;
 
-enumconst:
+enumeration_constant:
 	IDENTIFIER
 ;
 
-charconst:
+character_constant:
 	CHARCONSTANT
 |
 	WCHARCONSTANT
 ;
 
-stringliteral:
+string_literal:
 	STRINGLITERAL
 |
 	WSTRINGLITERAL
