@@ -1,13 +1,11 @@
 LEX     = flexc++
 PGEN    = bisonc++
-objects = lexer.o parser.o CARM-Compiler.o
 
-CARM-Compiler	: $(objects)
-
-lexer.o			: #parser/parser.cpp
-	cd lexer; $(LEX) lexer.lex
+lexer.o			:
+	cd lexer; $(LEX) C89.lex
 
 parser.o		: lexer.o
-	cd parser; $(PGEN) C89.gr --target-directory gen
+	cd parser; $(PGEN) C89.gr
 
-CARM-Compiler.o	: compiler.cpp
+CARM-Compiler.o	: parser.o
+	g++ -std=c++0x compiler.cpp parser/parse.cc lexer/lex.cc
