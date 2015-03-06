@@ -1,11 +1,11 @@
 LEX     = flexc++
 PGEN    = bisonc++
 
-lexer			:
+lexer.o			:
 	cd lexer; $(LEX) C89.lex
 
-parser			: lexer
+parser.o		: lexer.o
 	cd parser; $(PGEN) C89.gr
 
-CARM-Compiler.o	: parser
+CARM-Compiler.o	: parser.o
 	g++ -std=c++0x compiler.cpp parser/parse.cc lexer/lex.cc

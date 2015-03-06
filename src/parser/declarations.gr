@@ -7,9 +7,9 @@
 //
 
 declaration:
-	declaration_specifiers
+	declaration_specifiers SCOLON
 |
-	declaration_specifiers initialiser_declarator_list
+	declaration_specifiers initialiser_declarator_list SCOLON
 ;
 
 declaration_specifiers:
