@@ -8,7 +8,8 @@
 
 #include "parser/Parser.h"
 
-int main(){
+int main(int argc, char* argv[]){
 	Parser parser;
+	parser.d_scanner.switchIstream(argv[1]);		// requires modifying Parser.h for public d_scanner
 	parser.parse();
 }

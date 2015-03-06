@@ -12,10 +12,9 @@
 #undef Parser
 class Parser: public ParserBase
 {
-    // $insert scannerobject
-    Scanner d_scanner;
-        
     public:
+		// $insert scannerobject
+		Scanner d_scanner;
         int parse();
 
     private:
