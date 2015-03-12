@@ -43,9 +43,9 @@ arg_expr_list:
 unary_expr:
 	postfix_expr
 |
-	OPERATOR_INCR unary_expr
+	OPERATOR_INCR unary_expr						%prec PREINCR
 |
-	OPERATOR_DECR unary_expr
+	OPERATOR_DECR unary_expr						%prec PREDECR
 |
 	unary_operation cast_expr
 |
@@ -55,13 +55,13 @@ unary_expr:
 ;
 
 unary_operation:
-	OPERATOR_BITAND
+	OPERATOR_BITAND									%prec ADDR
 |
-	ASTERISK
+	OPERATOR_MULT									%prec DEREF
 |
-	OPERATOR_PLUS
+	OPERATOR_PLUS									%prec UPLUS
 |
-	OPERATOR_MINUS
+	OPERATOR_MINUS									%prec UMINUS
 |
 	OPERATOR_BITNEG
 |
@@ -71,13 +71,13 @@ unary_operation:
 cast_expr:
 	unary_expr
 |
-	LBRACKET type_name RBRACKET cast_expr
+	LBRACKET type_name RBRACKET cast_expr			%prec CAST
 ;
 
 multiplicative_expr:
 	cast_expr
 |
-	multiplicative_expr ASTERISK cast_expr
+	multiplicative_expr OPERATOR_MULT cast_expr
 |
 	multiplicative_expr OPERATOR_DIV cast_expr
 |

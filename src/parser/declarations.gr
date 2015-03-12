@@ -173,13 +173,13 @@ direct_declarator:
 ;
 
 pointer:
-	ASTERISK
+	OPERATOR_MULT
 |
-	ASTERISK type_qualifier_list
+	OPERATOR_MULT type_qualifier_list
 |
-	ASTERISK pointer
+	OPERATOR_MULT pointer
 |
-	ASTERISK type_qualifier_list pointer
+	OPERATOR_MULT type_qualifier_list pointer
 ;
 
 type_qualifier_list:
