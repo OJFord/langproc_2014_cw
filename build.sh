@@ -5,6 +5,7 @@ ssh -p 55555 root@localhost << ENDCMDS
 cd ~/CARM/src
 make CARM-Compiler.o
 ENDCMDS
+scp -i ~/.ssh/id_armrsa -P 55555 root@localhost:~/CARM/src/parser/C89.gr.output ./src/parser/C89.gr.output
 scp -i ~/.ssh/id_armrsa -P 55555 root@localhost:~/CARM/src/lexer/Scanner.h ./src/lexer/Scanner.h
 scp -i ~/.ssh/id_armrsa -P 55555 root@localhost:~/CARM/src/lexer/Scanner.ih ./src/lexer/Scanner.ih
 scp -i ~/.ssh/id_armrsa -P 55555 root@localhost:~/CARM/src/lexer/Scannerbase.h ./src/lexer/Scannerbase.h
