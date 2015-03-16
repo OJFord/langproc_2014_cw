@@ -7,23 +7,28 @@
 //
 
 declaration:
-	declaration_specifiers SCOLON
+	declaration_specifiers initialiser_declarator_list_opt SCOLON
+;
+
+initialiser_declarator_list_opt:
+	initialiser_declarator_list
 |
-	declaration_specifiers initialiser_declarator_list SCOLON
+	epsilon
 ;
 
 declaration_specifiers:
-	storage_class_specifier
+	storage_class_specifier declaration_specifiers_opt
 |
-	storage_class_specifier declaration_specifiers
+	type_specifier declaration_specifiers_opt
 |
-	type_specifier
+	type_qualifier declaration_specifiers_opt
+
+;
+
+declaration_specifiers_opt:
+	declaration_specifiers
 |
-	type_specifier declaration_specifiers
-|
-	type_qualifier
-|
-	type_qualifier declaration_specifiers
+	epsilon
 ;
 
 initialiser_declarator_list:
@@ -73,15 +78,21 @@ type_specifier:
 |
 	enum_specifier
 |
-	typedef_name
+	typedef_name												%prec TYPEDEF_IDENT
 ;
 
 struct_union_specifier:
 	struct_union LBRACE struct_declaration_list RBRACE
 |
-	struct_union IDENTIFIER LBRACE struct_declaration_list RBRACE
+	struct_union identifier_opt LBRACE struct_declaration_list RBRACE
 |
 	struct_union IDENTIFIER
+;
+
+identifier_opt:
+	IDENTIFIER
+|
+	epsilon
 ;
 
 struct_union:
@@ -101,13 +112,15 @@ struct_declaration:
 ;
 
 spec_qualifier_list:
-	type_specifier
+	type_specifier spec_qualifier_list_opt
 |
-	type_specifier spec_qualifier_list
+	type_qualifier spec_qualifier_list_opt
+;
+
+spec_qualifier_list_opt:
+	spec_qualifier_list
 |
-	type_qualifier
-|
-	type_qualifier spec_qualifier_list
+	epsilon
 ;
 
 struct_declarator_list:
@@ -119,15 +132,17 @@ struct_declarator_list:
 struct_declarator:
 	declarator
 |
-	COLON constant_expr
+	declarator_opt COLON constant_expr
+;
+
+declarator_opt:
+	declarator
 |
-	declarator COLON constant_expr
+	epsilon
 ;
 
 enum_specifier:
-	KW_ENUM LBRACE enumerator_list RBRACE
-|
-	KW_ENUM IDENTIFIER LBRACE enumerator_list RBRACE
+	KW_ENUM identifier_opt LBRACE enumerator_list RBRACE
 |
 	KW_ENUM IDENTIFIER
 ;
@@ -151,35 +166,47 @@ type_qualifier:
 ;
 
 declarator:
-	direct_declarator
+	pointer_opt direct_declarator
+;
+
+pointer_opt:
+	pointer
 |
-	pointer direct_declarator
+	epsilon
 ;
 
 direct_declarator:
-	IDENTIFIER
+	IDENTIFIER													%prec DECL_IDENT
 |
 	LBRACKET declarator RBRACKET
 |
-	direct_declarator LSQUBRACKET RSQUBRACKET
+	direct_declarator LSQUBRACKET constant_expr_opt RSQUBRACKET
 |
-	direct_declarator LSQUBRACKET constant_expr RSQUBRACKET
-|
-	direct_declarator LBRACKET param_type_list RBRACKET
-|
-	direct_declarator LBRACKET RBRACKET
+	direct_declarator LBRACKET param_type_list_opt RBRACKET
 |
 	direct_declarator LBRACKET identifier_list RBRACKET
 ;
 
+constant_expr_opt:
+	constant_expr
+|
+	epsilon
+;
+
+param_type_list_opt:
+	param_type_list
+|
+	epsilon
+;
+
 pointer:
-	OPERATOR_MULT
+	OPERATOR_MULT type_qualifier_list_opt pointer_opt
+;
+
+type_qualifier_list_opt:
+	type_qualifier_list
 |
-	OPERATOR_MULT type_qualifier_list
-|
-	OPERATOR_MULT pointer
-|
-	OPERATOR_MULT type_qualifier_list pointer
+	epsilon
 ;
 
 type_qualifier_list:
@@ -201,7 +228,7 @@ param_list:
 ;
 
 param_declaration:
-	declaration_specifiers declarator
+	declaration_specifiers declarator_opt
 |
 	declaration_specifiers
 |
@@ -223,29 +250,29 @@ type_name:
 abstract_declarator:
 	pointer
 |
-	direct_abstract_declarator
-|
-	pointer direct_abstract_declarator
+	pointer_opt direct_abstract_declarator
 ;
 
 direct_abstract_declarator:
-	LBRACKET abstract_declarator RBRACKET
+	LBRACKET abstract_declarator_opt RBRACKET
 |
-	LSQUBRACKET RSQUBRACKET
+	direct_abstract_declarator LSQUBRACKET constant_expr_opt RSQUBRACKET
 |
-	direct_abstract_declarator LSQUBRACKET RSQUBRACKET
+	direct_abstract_declarator_opt LSQUBRACKET constant_expr RSQUBRACKET
 |
-	LSQUBRACKET constant_expr RSQUBRACKET
+	direct_abstract_declarator_opt LBRACKET param_type_list RBRACKET
+;
+
+abstract_declarator_opt:
+	abstract_declarator
 |
-	direct_abstract_declarator LSQUBRACKET constant_expr RSQUBRACKET
+	epsilon
+;
+
+direct_abstract_declarator_opt:
+	direct_abstract_declarator
 |
-	LBRACKET RBRACKET
-|
-	direct_abstract_declarator LBRACKET RBRACKET
-|
-	LBRACKET param_type_list RBRACKET
-|
-	direct_abstract_declarator LBRACKET param_type_list RBRACKET
+	epsilon
 ;
 
 typedef_name:
@@ -255,9 +282,13 @@ typedef_name:
 initialiser:
 	assignment_expr
 |
-	LBRACE initialiser_list RBRACE
+	LBRACE initialiser_list comma_opt RBRACE
+;
+
+comma_opt:
+	COMMA
 |
-	LBRACE initialiser_list COMMA RBRACE
+	epsilon
 ;
 
 initialiser_list:

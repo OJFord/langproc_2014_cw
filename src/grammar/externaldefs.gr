@@ -1,0 +1,35 @@
+//
+//  externaldefs.gr
+//  CARM-Compiler
+//
+//  Created by Ollie Ford on 01/03/2015.
+//  Copyright (c) 2015 OJFord. All rights reserved.
+//
+
+translation_unit:
+	translation_unit_opt external_declaration
+;
+
+translation_unit_opt:
+	translation_unit
+|
+	epsilon
+;
+
+external_declaration:
+	function_definition
+|
+	declaration
+;
+
+function_definition:
+	declaration_specifiers declarator declaration_list_opt compound_stmt
+|
+	declarator declaration_list_opt compound_stmt
+;
+
+declaration_list_opt:
+	declaration_list
+|
+	epsilon
+;

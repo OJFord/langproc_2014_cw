@@ -29,13 +29,13 @@ labeled_stmt:
 ;
 
 compound_stmt:
-	LBRACE RBRACE
+	LBRACE declaration_list_opt stmt_list_opt RBRACE
+;
+
+stmt_list_opt:
+	stmt_list
 |
-	LBRACE declaration_list RBRACE
-|
-	LBRACE stmt_list RBRACE
-|
-	LBRACE declaration_list stmt_list RBRACE
+	epsilon
 ;
 
 declaration_list:
@@ -45,15 +45,19 @@ declaration_list:
 ;
 
 stmt_list:
-	stmt
-|
-	stmt_list stmt
+	stmt_list_opt stmt
 ;
 
 expr_stmt:
 	SCOLON
 |
-	expr SCOLON
+	expr_opt SCOLON
+;
+
+expr_opt:
+	expr
+|
+	epsilon
 ;
 
 select_stmt:
@@ -69,21 +73,7 @@ iter_stmt:
 |
 	KW_DO stmt KW_WHILE LBRACKET expr RBRACKET SCOLON
 |
-	KW_FOR LBRACKET SCOLON SCOLON RBRACKET stmt
-|
-	KW_FOR LBRACKET expr SCOLON SCOLON RBRACKET stmt
-|
-	KW_FOR LBRACKET SCOLON expr SCOLON RBRACKET stmt
-|
-	KW_FOR LBRACKET SCOLON SCOLON expr RBRACKET stmt
-|
-	KW_FOR LBRACKET expr SCOLON expr SCOLON RBRACKET stmt
-|
-	KW_FOR LBRACKET expr SCOLON SCOLON expr RBRACKET stmt
-|
-	KW_FOR LBRACKET SCOLON expr SCOLON expr RBRACKET stmt
-|
-	KW_FOR LBRACKET expr SCOLON expr SCOLON expr RBRACKET stmt
+	KW_FOR LBRACKET expr_opt SCOLON expr_opt SCOLON expr_opt RBRACKET stmt
 ;
 
 jump_stmt:
@@ -93,7 +83,5 @@ jump_stmt:
 |
 	KW_BREAK SCOLON
 |
-	KW_RETURN SCOLON
-|
-	KW_RETURN expr SCOLON
+	KW_RETURN expr_opt SCOLON
 ;

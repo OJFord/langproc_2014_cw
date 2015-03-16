@@ -6,7 +6,9 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-// Associativity and precedence as given http://en.cppreference.com/w/c/language/operator_precedence
+
+%nonassoc	TYPEDEF_IDENT
+%right		DECL_IDENT
 
 // Keywords
 %nonassoc	KW_AUTO KW_DOUBLE KW_INT KW_STRUCT KW_BREAK KW_ELSE KW_LONG KW_SWITCH KW_CASE KW_ENUM KW_REGISTER KW_TYPEDEF KW_CHAR KW_EXTERN KW_RETURN KW_UNION KW_CONST KW_FLOAT KW_SHORT KW_UNSIGNED KW_CONTINUE KW_FOR KW_SIGNED KW_VOID KW_DEFAULT KW_GOTO KW_VOLATILE KW_DO KW_IF KW_STATIC KW_WHILE
@@ -16,8 +18,12 @@
 // Constants
 %nonassoc	FLOATCONSTANT DECCONSTANT OCTCONSTANT HEXCONSTANT CHARCONSTANT WCHARCONSTANT STRINGLITERAL WSTRINGLITERAL
 
+
+
+// Associativity and precedence as given http://en.cppreference.com/w/c/language/operator_precedence
+
 // Punctuators
-%nonassoc SCOLON PUNCTUATOR_TRIPLEDOT LBRACE RBRACE
+%nonassoc	SCOLON PUNCTUATOR_TRIPLEDOT LBRACE RBRACE
 
 %left		COMMA
 

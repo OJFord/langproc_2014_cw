@@ -23,7 +23,7 @@ postfix_expr:
 |
 	postfix_expr LBRACKET RBRACKET
 |
-	postfix_expr LBRACKET arg_expr_list RBRACKET
+	postfix_expr LBRACKET arg_expr_list_opt RBRACKET
 |
 	postfix_expr OPERATOR_DOT IDENTIFIER
 |
@@ -32,6 +32,12 @@ postfix_expr:
 	postfix_expr OPERATOR_INCR
 |
 	postfix_expr OPERATOR_DECR
+;
+
+arg_expr_list_opt:
+	arg_expr_list
+|
+	epsilon
 ;
 
 arg_expr_list:

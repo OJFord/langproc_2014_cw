@@ -25,6 +25,9 @@
 
 %% // Begin grammar rules as defined in C89 spec
 
+epsilon:
+;
+
 %include						constants.gr
 %include						expressions.gr
 %include						declarations.gr

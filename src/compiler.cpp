@@ -6,10 +6,15 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-#include "parser/Parser.h"
+#include "parser/parser.h"
 
 int main(int argc, char* argv[]){
-	Parser parser;
-	parser.d_scanner.switchIstream(argv[1]);		// requires modifying Parser.h for public d_scanner
-	parser.parse();
+	Parser* parser;
+	
+	if(argc>1)
+		parser = new Parser(argv[1]);
+	else
+		parser = new Parser();
+	
+	parser->parse();
 }
