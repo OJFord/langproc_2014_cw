@@ -6,4 +6,14 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-#include "exceptions.h"
+#include "lexer/exceptions.h"
+
+UnknownSymbolException::UnknownSymbolException(std::string sym) : sym(sym){
+}
+
+UnknownSymbolException::~UnknownSymbolException(void) throw(){
+}
+	
+const char* UnknownSymbolException::what(void) const throw(){
+	return ("Symbol "+sym+" was not declared in this scope.").c_str();
+}

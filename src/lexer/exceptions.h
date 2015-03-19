@@ -14,12 +14,10 @@
 
 class UnknownSymbolException: public std::exception{
 public:
-	UnknownSymbolException(std::string sym) : sym(sym){};
-	~UnknownSymbolException(void) throw(){};
+	UnknownSymbolException(std::string);
+	~UnknownSymbolException(void) throw();
 	
-	virtual const char* what(void) const throw(){
-		return ("Symbol "+sym+" was not declared in this scope.").c_str();
-	}
+	virtual const char* what(void) const throw();
 
 protected:
 	const std::string sym;
