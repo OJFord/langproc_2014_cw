@@ -10,139 +10,30 @@
 #define __CARM_Compiler__tokens__
 
 #include <string>
-#include <map>
-#include <boost/regex.hpp>
-#include <climits>
-#include <cerrno>
-#include <cstdlib>
-#include "exceptions.h"
+#include <boost/bimap.hpp>
+//#include <climits>
+//#include <cerrno>
+//#include <cstdlib>
+#include "lexer/lex.h"
 
-enum terminal{
-	KW_AUTO,
-	KW_DOUBLE,
-	KW_INT,
-	KW_STRUCT,
-	KW_BREAK,
-	KW_ELSE,
-	KW_LONG,
-	KW_SWITCH,
-	KW_CASE,
-	KW_ENUM,
-	KW_REGISTER,
-	KW_TYPEDEF,
-	KW_CHAR,
-	KW_EXTERN,
-	KW_RETURN,
-	KW_UNION,
-	KW_CONST,
-	KW_FLOAT,
-	KW_SHORT,
-	KW_UNSIGNED,
-	KW_CONTINUE,
-	KW_FOR,
-	KW_SIGNED,
-	KW_VOID,
-	KW_DEFAULT,
-	KW_GOTO,
-	KW_SIZEOF,
-	KW_VOLATILE,
-	KW_DO,
-	KW_IF,
-	KW_STATIC,
-	KW_WHILE,
-	IDENTIFIER,
-	CONSTANT_FLOATING,
-	CONSTANT_INTEGER,
-	CONSTANT_CHAR,
-	CONSTANT_CHAR_WIDE,
-	CONSTANT_STRINGLITERAL,
-	CONSTANT_STRINGLITERAL_WIDE,
-	PUNCOP_BRACKET_LEFT,
-	PUNCOP_BRACKET_RIGHT,
-	PUNCOP_PAREN_LEFT,
-	PUNCOP_PAREN_RIGHT,
-	PUNCOP_BRACE_LEFT,
-	PUNCOP_BRACE_RIGHT,
-	PUNCOP_COMMA,
-	PUNCOP_COLON,
-	PUNCOP_EQUALS,
-	PUNCOP_SEMICOLON,
-	PUNCOP_DOT,
-	PUNCOP_ARROW,
-	PUNCOP_INCREMENT,
-	PUNCOP_DECREMENT,
-	PUNCOP_BIT_AND,
-	PUNCOP_PLUS,
-	PUNCOP_MINUS,
-	PUNCOP_BIT_NEG,
-	PUNCOP_BOOL_NEG,
-	PUNCOP_MULT,
-	PUNCOP_DIV,
-	PUNCOP_MOD,
-	PUNCOP_SHIFT_LEFT,
-	PUNCOP_SHIFT_RIGHT,
-	PUNCOP_LT,
-	PUNCOP_GT,
-	PUNCOP_LT_EQUALS,
-	PUNCOP_GT_EQUALS,
-	PUNCOP_EQUALITY,
-	PUNCOP_NOTEQUALS,
-	PUNCOP_BIT_XOR,
-	PUNCOP_BIT_OR,
-	PUNCOP_BOOL_AND,
-	PUNCOP_BOOL_OR,
-	PUNCOP_TERNARY,
-	PUNCOP_MULT_EQUALS,
-	PUNCOP_DIV_EQUALS,
-	PUNCOP_MOD_EQUALS,
-	PUNCOP_PLUS_EQUALS,
-	PUNCOP_MINUS_EQUALS,
-	PUNCOP_BSL_EQUALS,
-	PUNCOP_BSR_EQUALS,
-	PUNCOP_AND_EQUALS,
-	PUNCOP_XOR_EQUALS,
-	PUNCOP_OR_EQUALS,
-	PUNCOP_ELLIPSIS,
-	PUNCOP_UNARY_MINUS,
-	PUNCOP_UNARY_PLUS
-};
-
-class Token{
+class Token2{
 public:
-	virtual std::string what(void)	const =0;
-	virtual std::string raw(void)	const =0;
-protected:
+	Token2(lexeme, std::string);
+
+	static std::string name(const lexeme&);
+	//static lexeme id(const std::string&);
+
+	const lexeme lexID;
+	const std::string lexed;
+	const std::string matched;
+
 private:
+	// Maps enumerated lexemes to their names, pretty-printing & errors ftw
+	//	- an std::map is pretty overkill, but has some maybe useful stuff, order doesn't matter etc.
+	//	- and maybe hopefully constant maps of constant things are optimised out completely
+	static const std::map<lexeme, std::string> lexname;
 };
 
-class Terminal: public Token{
-public:
-	Terminal(std::string raw) : _raw(raw){};
-	
-	std::string raw(void) const{
-		return _raw;
-	}
-protected:
-	const std::string _raw;
-private:
-};
-
-class NonTerminal: public Token{
-public:
-protected:
-private:
-};
-
-class Keyword: public Terminal{
-public:
-	static const std::map<std::string, Keyword*> keywords;
-	std::string what(void) const{
-		return "KW_"+raw();
-	}
-protected:
-private:
-	Keyword(std::string raw) : Terminal(raw){};
-};
 /*
 
 namespace Terminals {
@@ -443,54 +334,56 @@ private:
 	friend class Keyword;
 };
 
+
+
 const std::map<std::string, PunctuatorOperator*> PunctuatorOperator::puncops{
-	{	"[",		new PunctuatorOperator("[",		"BRACKET_LEFT")		},
-	{	"]",		new PunctuatorOperator("]",		"BRACKET_RIGHT")	},
-	{	"(",		new PunctuatorOperator("(", 	"PAREN_LEFT")		},
-	{	")",		new PunctuatorOperator(")", 	"PAREN_RIGHT")		},
-	{	".",		new PunctuatorOperator(".",		"DOT")				},
-	{	"->",		new PunctuatorOperator("->",	"ARROW")			},
-	{	"++",		new PunctuatorOperator("++",	"INCREMENT")		},
-	{	"--",		new PunctuatorOperator("--",	"DECREMENT")		},
-	{	"&",		new PunctuatorOperator("&",		"AMPERSAND")		},
-	{	"*",		new PunctuatorOperator("*",		"MULT")				},
-	{	"+",		new PunctuatorOperator("+",		"PLUS")				},
-	{	"-",		new PunctuatorOperator("-",		"MINUS")			},
-	{	"~",		new PunctuatorOperator("~",		"BIT_NEG")			},
-	{	"!",		new PunctuatorOperator("!",		"BOOL_NEG")			},
-	{	"sizeof",	new PunctuatorOperator("sizeof","SIZEOF")			},
-	{	"/",		new PunctuatorOperator("/",		"DIV")				},
-	{	"%",		new PunctuatorOperator("%",		"MOD")				},
-	{	"<<",		new PunctuatorOperator("<<",	"SHIFT_LEFT")		},
-	{	">>",		new PunctuatorOperator(">>",	"SHIFT_RIGHT")		},
-	{	"<",		new PunctuatorOperator("<",		"LT")				},
-	{	">",		new PunctuatorOperator(">",		"GT")				},
-	{	"<=",		new PunctuatorOperator("<=",	"LTEQUALS")			},
-	{	">=",		new PunctuatorOperator(">=",	"GTEQUALS")			},
-	{	"==",		new PunctuatorOperator("==",	"EQUALITY")			},
-	{	"!=",		new PunctuatorOperator("!=",	"NOTEQUALITY")		},
-	{	"^",		new PunctuatorOperator("^",		"BIT_XOR")			},
-	{	"|",		new PunctuatorOperator("|",		"BIT_OR")			},
-	{	"&&",		new PunctuatorOperator("&&",	"BOOL_AND")			},
-	{	"||",		new PunctuatorOperator("||",	"BOOL_OR")			},
-	{	"?",		new PunctuatorOperator("?",		"TERNARY")			},
-	{	":",		new PunctuatorOperator(":",		"COLON")			},
-	{	"=",		new PunctuatorOperator("=",		"EQUALS")			},
-	{	"*=",		new PunctuatorOperator("*=",	"MULT_EQUALS")		},
-	{	"/=",		new PunctuatorOperator("/=",	"DIV_EQUALS")		},
-	{	"%=",		new PunctuatorOperator("%=",	"MOD_EQUALS")		},
-	{	"+=",		new PunctuatorOperator("+=",	"PLUS_EQUALS")		},
-	{	"-=",		new PunctuatorOperator("-=",	"MINUS_EQUALS")		},
-	{	"<<=",		new PunctuatorOperator("<<=",	"BSL_EQUALS")		},
-	{	">>=",		new PunctuatorOperator(">>=",	"BSR_EQUALS")		},
-	{	"&=",		new PunctuatorOperator("&=",	"AND_EQUALS")		},
-	{	"^=",		new PunctuatorOperator("^=",	"XOR_EQUALS")		},
-	{	"|=",		new PunctuatorOperator("|=",	"OR_EQUALS")		},
-	{	",",		new PunctuatorOperator(",",		"COMMA")			},
-	{	"{",		new PunctuatorOperator("{",		"BRACE_LEFT")		},
-	{	"}",		new PunctuatorOperator("}",		"BRACE_RIGHT")		},
-	{	";",		new PunctuatorOperator(";",		"SEMICOLON")		},
-	{	"...",		new PunctuatorOperator("...",	"ELLIPSIS")			}
+	{	"[",		PunctuatorOperator()("[",		"BRACKET_LEFT")		},
+	{	"]",		PunctuatorOperator()("]",		"BRACKET_RIGHT")	},
+	{	"(",		PunctuatorOperator()("(", 	"PAREN_LEFT")		},
+	{	")",		PunctuatorOperator()(")", 	"PAREN_RIGHT")		},
+	{	".",		PunctuatorOperator()(".",		"DOT")				},
+	{	"->",		PunctuatorOperator()("->",	"ARROW")			},
+	{	"++",		PunctuatorOperator()("++",	"INCREMENT")		},
+	{	"--",		PunctuatorOperator()("--",	"DECREMENT")		},
+	{	"&",		PunctuatorOperator()("&",		"AMPERSAND")		},
+	{	"*",		PunctuatorOperator()("*",		"MULT")				},
+	{	"+",		PunctuatorOperator()("+",		"PLUS")				},
+	{	"-",		PunctuatorOperator()("-",		"MINUS")			},
+	{	"~",		PunctuatorOperator()("~",		"BIT_NEG")			},
+	{	"!",		PunctuatorOperator()("!",		"BOOL_NEG")			},
+	{	"sizeof",	PunctuatorOperator()("sizeof","SIZEOF")			},
+	{	"/",		PunctuatorOperator()("/",		"DIV")				},
+	{	"%",		PunctuatorOperator()("%",		"MOD")				},
+	{	"<<",		PunctuatorOperator()("<<",	"SHIFT_LEFT")		},
+	{	">>",		PunctuatorOperator()(">>",	"SHIFT_RIGHT")		},
+	{	"<",		PunctuatorOperator()("<",		"LT")				},
+	{	">",		PunctuatorOperator()(">",		"GT")				},
+	{	"<=",		PunctuatorOperator()("<=",	"LTEQUALS")			},
+	{	">=",		PunctuatorOperator()(">=",	"GTEQUALS")			},
+	{	"==",		PunctuatorOperator()("==",	"EQUALITY")			},
+	{	"!=",		PunctuatorOperator()("!=",	"NOTEQUALITY")		},
+	{	"^",		PunctuatorOperator()("^",		"BIT_XOR")			},
+	{	"|",		PunctuatorOperator()("|",		"BIT_OR")			},
+	{	"&&",		PunctuatorOperator()("&&",	"BOOL_AND")			},
+	{	"||",		PunctuatorOperator()("||",	"BOOL_OR")			},
+	{	"?",		PunctuatorOperator()("?",		"TERNARY")			},
+	{	":",		PunctuatorOperator()(":",		"COLON")			},
+	{	"=",		PunctuatorOperator()("=",		"EQUALS")			},
+	{	"*=",		PunctuatorOperator()("*=",	"MULT_EQUALS")		},
+	{	"/=",		PunctuatorOperator()("/=",	"DIV_EQUALS")		},
+	{	"%=",		PunctuatorOperator()("%=",	"MOD_EQUALS")		},
+	{	"+=",		PunctuatorOperator()("+=",	"PLUS_EQUALS")		},
+	{	"-=",		PunctuatorOperator()("-=",	"MINUS_EQUALS")		},
+	{	"<<=",		PunctuatorOperator()("<<=",	"BSL_EQUALS")		},
+	{	">>=",		PunctuatorOperator()(">>=",	"BSR_EQUALS")		},
+	{	"&=",		PunctuatorOperator()("&=",	"AND_EQUALS")		},
+	{	"^=",		PunctuatorOperator()("^=",	"XOR_EQUALS")		},
+	{	"|=",		PunctuatorOperator()("|=",	"OR_EQUALS")		},
+	{	",",		PunctuatorOperator()(",",		"COMMA")			},
+	{	"{",		PunctuatorOperator()("{",		"BRACE_LEFT")		},
+	{	"}",		PunctuatorOperator()("}",		"BRACE_RIGHT")		},
+	{	";",		PunctuatorOperator()(";",		"SEMICOLON")		},
+	{	"...",		PunctuatorOperator()("...",	"ELLIPSIS")			}
 };
 
 }// namespace Terminals

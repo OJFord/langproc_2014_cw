@@ -15,19 +15,35 @@
 #include <ostream>
 
 #include "Scanner.h"
-#include "exceptions.h"
-#include "../parser/tokens.h"
+#include "parser/tokens.h"
+#include "parser/syntax-tree.h"		//this feels dirty.. !TODO restructure stuff..
+#include "lexer/exceptions.h"
 
-typedef std::pair<std::string, Terminal*> Symbol;
-typedef std::pair<unsigned, Symbol> ScopeSymbolPair;
+
+class SymbolTableEntry{
+public:
+	SymbolTableEntry(unsigned, Token2);
+
+	// Returns value associated with symbols level of scope
+	//	- 0 is global; incremented with each block from there
+	unsigned const& scope(void) const;
+
+	// Returns a reference to the symbol in entry
+	Token2 const& symbol(void) const;
+
+
+private:
+	const unsigned _scope;
+	const Token2 _symbol;
+};
 
 class SymbolTable
-: private std::vector<ScopeSymbolPair>{
+: private std::vector<SymbolTableEntry*>{
 public:
 	SymbolTable(void);
 	
 	// Inserts a new symbol to the table within present scope
-	void insert(Symbol);
+	void insert(const Token2&);
 	
 	// Returns true iff symbol name exists in the table
 	bool contains(std::string) const;

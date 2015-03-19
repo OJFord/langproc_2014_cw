@@ -6,8 +6,8 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-#ifndef __CARM_Compiler__exceptions__
-#define __CARM_Compiler__exceptions__
+#ifndef __CARM_Compiler__parse_exceptions__
+#define __CARM_Compiler__parse_exceptions__
 
 #include <exception>
 #include <string>

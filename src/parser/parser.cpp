@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-#include "parser.h"
+#include "parser/parser.h"
 
 Parser::Parser(void): lexer(new Lexer), symtbl( *(lexer->symtbl) ){
 }
