@@ -6,43 +6,132 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-#include "lexer.h"
+#include "lexer/lexer.h"
 
-Lexer::Lexer(void) : Scanner(), symtbl(new SymbolTable){
+std::ostream& operator<<(std::ostream& os, const LookAheadBuffer& lab){
+	os << "    Lexeme    |    LA(k)    " << std::endl;
+	os << "--------------+-------------" << std::endl;
+	
+	unsigned k=0;
+	for(auto it:lab){
+		k++;
+		std::string name = it.matched;
+		os << name;
+		for(unsigned i=14-name.length(); i!=0; --i)
+			os << " ";
+		os << "|     " << k << std::endl;
+	}
+	
+	return os;
 }
 
-terminal Lexer::lexan(void){
-	terminal t = static_cast<terminal>(lex());
-	switch(t){
-		// Add new identifier to symbol table -- it might not be declared
-		//	*properly*, but it's there.
-		case IDENTIFIER:
-			if( !symtbl->contains(matched()) )
-			   symtbl->insert( Symbol( matched(), nullptr ) );
-			break;
-			
-		// Scope changes
-		case PUNCOP_BRACE_LEFT:
-			std::cout << *symtbl << std::endl;
-			symtbl->beginScope();
-			break;
-		case PUNCOP_BRACE_RIGHT:
-			std::cout << *symtbl << std::endl;
-			symtbl->closeScope();
-			break;
-			
-		// Make parsing easier with unary pseudo-terminals - lol
-		case PUNCOP_MINUS:
-			if(last>=PUNCOP_BRACKET_LEFT && last<=PUNCOP_ELLIPSIS)
-				t = PUNCOP_UNARY_MINUS;
-		case PUNCOP_PLUS:
-			if(last>=PUNCOP_BRACKET_LEFT && last<=PUNCOP_ELLIPSIS)
-				t = PUNCOP_UNARY_PLUS;
+Lexer::Lexer(void)
+: Scanner(), symtbl(new SymbolTable),
+	labuf(new LookAheadBuffer){
+	lookahead(1);	// init la buffer
+}
 
-		default:;
+Lexer::Lexer(const char* fname)
+: Scanner(), symtbl(new SymbolTable),
+	labuf(new LookAheadBuffer){
+	lookahead(1);	// ctor delegation needs gcc47, labs have 44..
+	switchIstream(fname);
+}
+
+Lexer::~Lexer(){
+	delete symtbl;
+	delete labuf;
+}
+
+Token2& Lexer::lexan(void){
+	std::cout << "lexan" << std::endl;
+	Token2& ret = lookahead(1);
+	consume(ret.lexID);
+	std::cout << "leaving lexan" << std::endl;
+	return ret;
+}
+
+Token2& Lexer::lookahead(unsigned k){
+	std::cout << "lookahead" << std::endl;
+
+	lexeme t;
+	auto it = labuf->begin();
+	for( auto it:*labuf ){
+		if( --k==0 ){
+			break;
+		}
+		else{
+			t = static_cast<lexeme>(lex());
+
+			switch(t){
+				// Make parsing easier with unary pseudo-terminals - lol
+				case PUNCOP_MINUS:
+					if( last>=PUNCOP_BRACKET_LEFT && last<=PUNCOP_ELLIPSIS )
+						t = PUNCOP_UNARY_MINUS;
+					break;
+				case PUNCOP_PLUS:
+					if( last>=PUNCOP_BRACKET_LEFT && last<=PUNCOP_ELLIPSIS )
+						t = PUNCOP_UNARY_PLUS;
+					break;
+					
+				default:
+					last = t;
+			}
+
+			labuf->push_back( Token2(t, matched()) );
+		}
 	}
-	last = t;
-	return t;
+	std::cout << "leaving lookahead" << std::endl;
+	return *it;
+}
+
+Token2& Lexer::consume(const lexeme& m){
+	std::cout << "consume" << std::endl;
+
+	Token2	tk = Token2(m, Token2::name(m));
+	Token2& la = lookahead(1);
+
+	if( la.lexID == tk.lexID ){
+		std::cout << *labuf << std::endl;
+		labuf->pop_front();
+		std::cout << "popped front buffer" << std::endl;
+		switch(tk.lexID){
+				// Add new identifier to symbol table -- it might not be declared
+				//	*properly*, but it's there.
+			case IDENTIFIER:
+				if( !symtbl->contains( matched() ) )
+					symtbl->insert(la);
+				break;
+				
+				// Scope changes
+			case PUNCOP_BRACE_LEFT:
+				std::cout << *symtbl << std::endl;
+				symtbl->beginScope();
+				break;
+			case PUNCOP_BRACE_RIGHT:
+				std::cout << *symtbl << std::endl;
+				symtbl->closeScope();
+				break;
+			default:;
+		}
+	}
+	else
+		throw InvalidTokenException(tk.matched, la.matched);
+
+	std::cout << "leaving consume" << std::endl;
+	return la;
+}
+
+SymbolTableEntry::SymbolTableEntry(unsigned scope, Token2 sym)
+: _scope(scope), _symbol(sym){
+}
+
+unsigned const& SymbolTableEntry::scope(void) const{
+	return _scope;
+}
+
+Token2 const& SymbolTableEntry::symbol(void) const{
+	return _symbol;
 }
 
 SymbolTable::SymbolTable(void){
@@ -55,41 +144,46 @@ void SymbolTable::beginScope(void){
 
 void SymbolTable::closeScope(void){
 	scope--;
-	while( back().first>scope && size()!=0 )
+	while( back()->scope()>scope && size()!=0 )
 		pop_back();
 }
 
-void SymbolTable::insert(Symbol symbol){
-	push_back( ScopeSymbolPair(scope, symbol) );
+void SymbolTable::insert(const Token2& symbol){
+	push_back( new SymbolTableEntry(scope, symbol) );
 }
 	
-bool SymbolTable::contains(std::string name) const{
+bool SymbolTable::contains(const std::string& name) const{
 	try{
 		resolve(name);
 		return true;
-	} catch(UnknownSymbolException){
+	} catch(UnknownSymbolException& e){
 		return false;
 	}
 }
 
-Terminal* SymbolTable::resolve(std::string name) const{
+Token2 const& SymbolTable::resolve(const std::string& name) const{
 	// probably a fair assumption that symbol is more likely
 	//	in an inner scope, so more effecient to iterate 'backward'
-	for(auto it=rbegin(); it!=rend(); ++it)
-		if(it->second.first==name)
-			return it->second.second;
-	
+	for(auto it=rbegin(); it!=rend(); ++it){
+		const Token2& s = (*it)->symbol();
+		if( s.matched == name ){
+			return s;
+		}
+	}
+	// Symbol not in table
 	throw UnknownSymbolException(name);
 }
 
 std::ostream& operator<<(std::ostream& os, const SymbolTable& st){
 	os << "    Symbol    |    Scope    " << std::endl;
 	os << "--------------+-------------" << std::endl;
-	for(auto it=st.begin(); it!=st.end(); ++it){
-		os << it->second.first;
-		for(unsigned i=14-it->second.first.length(); i!=0; --i)
+	
+	// GCC 'internal error reporting bug' if this is made range-based
+	for(auto it=st.begin(); it!=st.end(); ++it){	
+		os << (*it)->symbol().matched;
+		for(unsigned i=14-(*it)->symbol().matched.length(); i!=0; --i)
 			os << " ";
-		os << "|     " << it->first << std::endl;
+		os << "|     " << (*it)->scope() << std::endl;
 	}
 	
 	return os;

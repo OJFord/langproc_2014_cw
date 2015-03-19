@@ -13,6 +13,7 @@
 #include <utility>
 #include <string>
 #include <ostream>
+#include <list>
 
 #include "Scanner.h"
 #include "parser/tokens.h"
@@ -46,11 +47,11 @@ public:
 	void insert(const Token2&);
 	
 	// Returns true iff symbol name exists in the table
-	bool contains(std::string) const;
+	bool contains(const std::string&) const;
 	
-	// Resolves a symbol name and returns a ptr to its object, which may be null
+	// Resolves a symbol name and returns a copy
 	//	- If no symbol with name exists, throws UnknownSymbolException
-	Terminal* resolve(std::string) const;
+	Token2 const& resolve(const std::string&) const;
 	
 	// Creates new scope level in table, new symbols will be at this level
 	void beginScope(void);
@@ -64,13 +65,42 @@ private:
 	friend std::ostream& operator<<(std::ostream&, const SymbolTable&);
 };
 
-class Lexer: public Scanner{
+// Pair containing lexeme and matched string
+//typedef std::pair<lexeme, std::string> Token2;
+
+
+class LookAheadBuffer
+: public std::list<Token2>{
+public:
+private:
+	friend std::ostream& operator<<(std::ostream&, const LookAheadBuffer&);
+};
+
+class Lexer: private Scanner{
 public:
 	Lexer(void);
-	terminal lexan(void);
+	Lexer(const char*);
+	~Lexer();
+	
+	// Lexes a single token, advancing lookahead buffer
+	//	- equivalent to consume( lookahead(1) );
+	Token2& lexan(void);
+	
+	// Looks ahead given number of lexical tokens
+	//	- 1..n tokens are buffered
+	Token2& lookahead(unsigned=1);
+	
+	// Matches and consumes the lexically next token
+	//	- throws UnexpectedTokenException if lexeme does not match
+	Token2& consume(const lexeme&);
+	
 	SymbolTable* symtbl;
+
 private:
-	terminal last;
+	lexeme last;
+	LookAheadBuffer* labuf;
+	
+	//static const std::map<lexeme, Terminal*> terminal;
 };
 
 #endif /* defined(__CARM_Compiler__lexer__) */
