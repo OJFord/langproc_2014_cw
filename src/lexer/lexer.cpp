@@ -28,14 +28,14 @@ std::ostream& operator<<(std::ostream& os, const LookAheadBuffer& lab){
 Lexer::Lexer(void)
 : Scanner(), symtbl(new SymbolTable),
 	labuf(new LookAheadBuffer){
-	lookahead(1);	// init la buffer
+	moreBuffer();	// init la buffer
 }
 
 Lexer::Lexer(const char* fname)
 : Scanner(), symtbl(new SymbolTable),
 	labuf(new LookAheadBuffer){
-	lookahead(1);	// ctor delegation needs gcc47, labs have 44..
 	switchIstream(fname);
+	moreBuffer();	// ctor delegation needs gcc47, labs have 44..
 }
 
 Lexer::~Lexer(){
@@ -51,37 +51,40 @@ Token2& Lexer::lexan(void){
 	return ret;
 }
 
-Token2& Lexer::lookahead(unsigned k){
-	std::cout << "lookahead" << std::endl;
-
-	lexeme t;
-	auto it = labuf->begin();
-	for( auto it:*labuf ){
-		if( --k==0 ){
+void Lexer::moreBuffer(void){
+	std::cout << "Lexing more input." << std::endl;
+	lexeme t = static_cast<lexeme>(lex());
+	switch(t){
+		// Make parsing easier with unary pseudo-terminals - lol
+		case PUNCOP_MINUS:
+			// If last lex was an operator or bracket, +/- is unary
+			if( last>=PUNCOP_BRACKET_LEFT && last<=PUNCOP_ELLIPSIS )
+				t = PUNCOP_UNARY_MINUS;
 			break;
-		}
-		else{
-			t = static_cast<lexeme>(lex());
-
-			switch(t){
-				// Make parsing easier with unary pseudo-terminals - lol
-				case PUNCOP_MINUS:
-					if( last>=PUNCOP_BRACKET_LEFT && last<=PUNCOP_ELLIPSIS )
-						t = PUNCOP_UNARY_MINUS;
-					break;
-				case PUNCOP_PLUS:
-					if( last>=PUNCOP_BRACKET_LEFT && last<=PUNCOP_ELLIPSIS )
-						t = PUNCOP_UNARY_PLUS;
-					break;
-					
-				default:
-					last = t;
-			}
-
-			labuf->push_back( Token2(t, matched()) );
-		}
+		case PUNCOP_PLUS:
+			if( last>=PUNCOP_BRACKET_LEFT && last<=PUNCOP_ELLIPSIS )
+				t = PUNCOP_UNARY_PLUS;
+			break;
+			
+		default:;
 	}
+	last = t;
+	Token2 tk(t, matched());
+	labuf->push_back(tk);
+	std::cout << "Found a " << tk.lexed << std::endl;
+}
+
+Token2& Lexer::lookahead(unsigned k){
+	std::cout << "lookahead " << k << std::endl;
+
+	auto it = labuf->begin();
+	// Lookahead to k, labuf->end() is just to stop a
+	//	worse error, 'real condition' is --k!=0
+	for(; it!=labuf->end() && --k!=0; ++it )
+		moreBuffer();
+
 	std::cout << "leaving lookahead" << std::endl;
+	std::cout << *labuf << std::endl;
 	return *it;
 }
 
@@ -92,7 +95,6 @@ Token2& Lexer::consume(const lexeme& m){
 	Token2& la = lookahead(1);
 
 	if( la.lexID == tk.lexID ){
-		std::cout << *labuf << std::endl;
 		labuf->pop_front();
 		std::cout << "popped front buffer" << std::endl;
 		switch(tk.lexID){

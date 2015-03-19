@@ -85,7 +85,7 @@ public:
 	// Lexes a single token, advancing lookahead buffer
 	//	- equivalent to consume( lookahead(1) );
 	Token2& lexan(void);
-	
+
 	// Looks ahead given number of lexical tokens
 	//	- 1..n tokens are buffered
 	Token2& lookahead(unsigned=1);
@@ -95,6 +95,10 @@ public:
 	Token2& consume(const lexeme&);
 	
 	SymbolTable* symtbl;
+
+protected:
+	// Increases length of lookahead buffer by 1
+	void moreBuffer(void);
 
 private:
 	lexeme last;
