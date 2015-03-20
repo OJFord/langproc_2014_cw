@@ -13,6 +13,7 @@ public:
 	InvocationArguments(const int, const char**);
 
 	bool flagExists(const std::string&) const;
+	const char* getOption(const std::string&) const;
 
 private:
 	const int argc;
