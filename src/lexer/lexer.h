@@ -78,8 +78,8 @@ private:
 
 class Lexer: private Scanner{
 public:
-	Lexer(void);
-	Lexer(const char*);
+	Lexer(bool);
+	Lexer(bool, const char*);
 	~Lexer();
 	
 	// Lexes a single token, advancing lookahead buffer
@@ -94,9 +94,13 @@ public:
 	//	- throws UnexpectedTokenException if lexeme does not match
 	Token2& consume(const lexeme&);
 	
+	// Ptr to symbol table implementation for symbols in scope
 	SymbolTable* symtbl;
 
 protected:
+	// Determines of verbosity of debug info etc
+	bool verbose;
+
 	// Increases length of lookahead buffer by 1
 	void moreBuffer(void);
 

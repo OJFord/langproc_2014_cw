@@ -21,19 +21,22 @@ std::ostream& operator<<(std::ostream& os, const LookAheadBuffer& lab){
 			os << " ";
 		os << "|     " << k << std::endl;
 	}
-	
 	return os;
 }
 
-Lexer::Lexer(void)
-: Scanner(), symtbl(new SymbolTable),
+Lexer::Lexer(bool verbose)
+: Scanner(), symtbl(new SymbolTable), verbose(verbose),
 	labuf(new LookAheadBuffer){
+	if(verbose)
+		std::cout << "Being verbose." << std::endl;
 	moreBuffer();	// init la buffer
 }
 
-Lexer::Lexer(const char* fname)
-: Scanner(), symtbl(new SymbolTable),
+Lexer::Lexer(bool verbose, const char* fname)
+: Scanner(), symtbl(new SymbolTable), verbose(verbose),
 	labuf(new LookAheadBuffer){
+	if(verbose)
+		std::cout << "Being verbose." << std::endl;
 	switchIstream(fname);
 	moreBuffer();	// ctor delegation needs gcc47, labs have 44..
 }
@@ -44,15 +47,15 @@ Lexer::~Lexer(){
 }
 
 Token2& Lexer::lexan(void){
-	std::cout << "lexan" << std::endl;
 	Token2& ret = lookahead(1);
 	consume(ret.lexID);
-	std::cout << "leaving lexan" << std::endl;
 	return ret;
 }
 
 void Lexer::moreBuffer(void){
-	std::cout << "Lexing more input." << std::endl;
+	if(verbose)
+		std::cout << "Lexing more input." << std::endl;
+
 	lexeme t = static_cast<lexeme>(lex());
 	switch(t){
 		// Make parsing easier with unary pseudo-terminals - lol
@@ -71,32 +74,34 @@ void Lexer::moreBuffer(void){
 	last = t;
 	Token2 tk(t, matched());
 	labuf->push_back(tk);
-	std::cout << "Found a " << tk.lexed << std::endl;
+	std::cout << "Lexed a " << tk.lexed << " on " << matched() << std::endl;
 }
 
 Token2& Lexer::lookahead(unsigned k){
-	std::cout << "lookahead " << k << std::endl;
+	if(verbose)
+		std::cout << "Looking ahead " << k << std::endl;
 
 	auto it = labuf->begin();
-	// Lookahead to k, labuf->end() is just to stop a
-	//	worse error, 'real condition' is --k!=0
-	for(; it!=labuf->end() && --k!=0; ++it )
-		moreBuffer();
+	for(; --k!=0; ++it){
+		// Lookahead to k, buffer contains at least k tk after loop
+		if( it==labuf->end() )
+			moreBuffer();
+	}
 
-	std::cout << "leaving lookahead" << std::endl;
-	std::cout << *labuf << std::endl;
-	return *it;
+	if(verbose)
+		std::cout << *labuf << std::endl;
+	return *it--;
 }
 
 Token2& Lexer::consume(const lexeme& m){
-	std::cout << "consume" << std::endl;
+	if(verbose)
+		std::cout << "Eating a " << Token2::name(m) << std::endl;
 
 	Token2	tk = Token2(m, Token2::name(m));
 	Token2& la = lookahead(1);
 
 	if( la.lexID == tk.lexID ){
 		labuf->pop_front();
-		std::cout << "popped front buffer" << std::endl;
 		switch(tk.lexID){
 				// Add new identifier to symbol table -- it might not be declared
 				//	*properly*, but it's there.
@@ -119,8 +124,8 @@ Token2& Lexer::consume(const lexeme& m){
 	}
 	else
 		throw InvalidTokenException(tk.matched, la.matched);
-
-	std::cout << "leaving consume" << std::endl;
+	if(verbose)
+		std::cout << *labuf << std::endl;
 	return la;
 }
 
