@@ -10,7 +10,7 @@
 #include "parser/tokens.h"
 
 Token2::Token2(lexeme l, std::string m)
-: lexID(l)/*, lexed( lexname.left.find(l)->second )*/, matched(m){
+: lexID(l), lexed( lexname.find(l)->second ), matched(m){
 }
 
 std::string Token2::name(const lexeme& l){
@@ -22,8 +22,9 @@ lexeme Token2::id(const std::string& s){
 }
 */
 const std::map<lexeme, std::string> Token2::lexname={
+	{	LEX_EOF,							"EOF"							},
 	{	KW_AUTO,							"KW_AUTO"						},
-	{	KW_AUTO,							"KW_DOUBLE"						},
+	{	KW_DOUBLE,							"KW_DOUBLE"						},
 	{	KW_INT,								"KW_INT"						},
 	{	KW_STRUCT,							"KW_STRUCT"						},
 	{	KW_BREAK,							"KW_BREAK"						},

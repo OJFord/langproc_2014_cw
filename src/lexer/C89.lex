@@ -65,6 +65,8 @@ PPNUMSEQ						{PPNUM}+
 [ \t\n]
 
 
+<<EOF>>							return LEX_EOF;
+
 /*
 *	Keyword
 */

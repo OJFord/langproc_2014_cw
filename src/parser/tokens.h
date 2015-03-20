@@ -30,7 +30,7 @@ public:
 private:
 	// Maps enumerated lexemes to their names, pretty-printing & errors ftw
 	//	- an std::map is pretty overkill, but has some maybe useful stuff, order doesn't matter etc.
-	//	- and maybe hopefully constant maps of constant things are optimised out completely
+	//		and maybe-hopefully constant maps of constant things are optimised out completely
 	static const std::map<lexeme, std::string> lexname;
 };
 

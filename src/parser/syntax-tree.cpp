@@ -34,7 +34,7 @@ std::string Terminal::what(void) const{
 
 TranslationUnit* Parser::translation_unit(void){
 	switch( lexer->lookahead().lexID ){
-		case EOF:
+		case LEX_EOF:
 			return nullptr;
 		default:
 			TranslationUnit* tutree = translation_unit();

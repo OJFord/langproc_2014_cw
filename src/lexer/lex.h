@@ -12,6 +12,7 @@
 // Enumerated type of all terminals and pseudo-terminals (unary +-)
 // 'pseudo terminal', lol
 enum lexeme{
+	LEX_EOF,
 	KW_AUTO,
 	KW_DOUBLE,
 	KW_INT,
