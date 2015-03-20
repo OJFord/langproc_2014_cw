@@ -1,30 +1,40 @@
-LEX		= flexc++
-CXX		= /usr/local/bin/g++-4.6
-CXXFLAGS= -std=gnu++0x -Wall -Wextra -pedantic -g #-Wfatal-errors
+LEX			= flexc++
+CXX			= /usr/local/bin/g++-4.6
+CXXFLAGS	= -std=gnu++0x -Wall -Wextra -pedantic -g #-Wfatal-errors
 
-all	: bin build test
+SRC_C		:= $(wildcard src/*.cpp)
+SRC_P 		:= src/parser/$(wildcard *.cpp)
+SRC_L		:= src/lexer/$(wildcard *.cpp)
 
-bin :
+OBJ_P		:= $(patsubst src/%.cpp, bin/%.o, $(wildcard src/parser/*.cpp))
+OBJ_L		:= $(patsubst src/%.cpp, bin/%.o, $(wildcard src/lexer/*.cpp))
+
+build				: bin/compiler
+
+bin/compiler		: $(SRC_C) $(OBJ_P) $(OBJ_L)	| bin/
+	$(CXX) $(SRC_C) $(CXXFLAGS) $(OBJ_L) $(OBJ_P) -Isrc -o bin/compiler
+
+bin/parser/%.o		: src/parser/%.cpp $(OBJ_L)	| bin/
+	$(CXX) -c $(CXXFLAGS) -Isrc -o $@ $<
+
+bin/lexer/%.o		: src/lexer/%.cpp	| bin/
+	$(CXX) -c $(CXXFLAGS) -Isrc -o $@ $<
+
+bin/				:
 	mkdir bin; mkdir bin/lexer; mkdir bin/parser
 
-bin/CARM-Compiler	: src/compiler.cpp bin/parser/* bin/lexer/*
-	$(CXX) src/*.cpp $(CXXFLAGS) bin/lexer/*.o bin/parser/*.o -Isrc -o bin/CARM-Compiler
-
-bin/parser/*	: bin/lexer/* src/parser/*
-	cd bin/parser; $(CXX) $(CXXFLAGS) -I../../src ../../src/parser/*.cpp -c
-
-bin/lexer/*	: src/lexer/*
-	cd bin/lexer; $(CXX) $(CXXFLAGS) -I../../src ../../src/lexer/*.cpp -c
-
 # fell down a giant hole trying to get flexc++ running on mac
-# flexit.sh compiles on emulated arm/linux and pulls back flex output
+#	- flexit.sh compiles on emulated arm/linux and pulls back flex output
 src/lexer/lex.cpp	: src/lexer/C89.lex
 	./flexit.sh
 
-build	: bin/CARM-Compiler
+all					: build test
 
-clean	:
+clean				:
 	rm -r bin; make all
 
-test	: build
-	./bin/CARM-Compiler test/input/A_sample1.c -v
+test_compile		: build
+	cd test; make build
+
+test				: test_compile
+	cd test; ./run_all.sh
