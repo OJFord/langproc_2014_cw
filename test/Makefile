@@ -30,14 +30,16 @@ got/%.exe got/%.link.log	: got/%.o
 
 got/%.input					:
 	if [ -e input/$*.input ] ; then cp input/$*.input $@; else echo "" > $@; fi
-	
-# This can be done with qemu-static if you set it up on your machine. It
-# is... lets say kind of useful
 
 got/%.output				: got/%.exe got/%.input
+	scp -i -P 55555 got/%.{exe,input} root@localhost:~/test/got/
+	ssh -i -P 55555 root@localhost << ENDSSH
+	cd test
 	cat got/$*.input | got/$*.exe > got/$*.output
-	
-	
+	ENDSSH
+	scp -i -P 55555 root@localhost:~/test/got/ got/%.output
+
+
 ###############################
 ## Reference rules
 
@@ -45,19 +47,21 @@ ref/%.exe					: input/%.c
 	$(CC) -o $@ $<
 
 ref/%.input					:
-	if [ -e ref/$*.input ] ; then cp ref/$*.input $@; else echo "" > $@; fi
+	if [ -e input/$*.input ] ; then cp input/$*.input $@; else echo "" > $@; fi
 	
 ref/%.output				: ref/%.exe ref/%.input
 	cat ref/$*.input | ref/$*.exe > ref/$*.output
 
 ###############################
-
 TEST_INPUTS	:=$(wildcard input/*.c)
 TEST_NAMES	:=$(patsubst input/%.c,%,$(TEST_INPUTS))
 
 TEST_ASMS	:=$(foreach i,$(TEST_NAMES), got/$(i).s)
+TEST_EXES	:=$(foreach i,$(TEST_NAMES), got/$(i).exe)
 
-build						: $(TEST_ASMS)
+build						: $(TEST_EXES)
 
-test						: build
-	./target_test.sh
+got/%.diff.log				: got/%.output ref/%.output
+	diff $^ > $@
+
+test						: got/$(TEST_NAMES).diff.log
