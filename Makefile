@@ -37,4 +37,4 @@ test_compile		: build
 	cd test; make build
 
 test				: test_compile
-	cd test; ./run_all.sh
+	cd test; make test

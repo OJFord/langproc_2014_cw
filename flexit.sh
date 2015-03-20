@@ -2,7 +2,7 @@
 #ssh-add ~/.ssh/id_armrsa
 scp -r -i ~/.ssh/id_armrsa -P 55555 ./src/* root@localhost:~/CARM/src/
 scp -r -i ~/.ssh/id_armrsa -P 55555 ./Makefile root@localhost:~/CARM/
-ssh -p 55555 root@localhost << ENDCMDS
+ssh -i ~/.ssh/id_armrsa -p 55555 root@localhost << ENDCMDS
 cd ~/CARM
 make build
 ENDCMDS
