@@ -2,7 +2,8 @@ LEX			= flexc++
 CXX			= /usr/local/bin/g++-4.6
 CXXFLAGS	= -std=gnu++0x -Wall -Wextra -pedantic -g #-Wfatal-errors
 
-SRC_C		:= $(wildcard src/*.{cpp,h})
+SRC_C		:= $(wildcard src/*.cpp)
+SRCH_C		:= $(wildcard src/*.h)
 SRC_P		:= $(wildcard src/parser/*.cpp)
 SRC_L		:= $(wildcard src/lexer/*.cpp)
 
@@ -11,13 +12,13 @@ OBJ_L		:= $(patsubst src/%.cpp, bin/%.o, $(SRC_L))
 
 build				: bin/compiler
 
-bin/compiler		: $(SRC_C) $(OBJ_P) $(OBJ_L)		| bin/
+bin/compiler		: $(SRC_C) $(SRCH_C) $(OBJ_P) $(OBJ_L)	| bin/
 	$(CXX) $(SRC_C) $(CXXFLAGS) $(OBJ_L) $(OBJ_P) -Isrc -o bin/compiler
 
-bin/parser/%.o		: src/parser/%.cpp src/parser/%.h	| bin/ $(OBJ_L)
+bin/parser/%.o		: src/parser/%.cpp src/parser/%.h		| bin/ $(OBJ_L)
 	$(CXX) -c $(CXXFLAGS) -Isrc -o $@ $<
 
-bin/lexer/%.o		: src/lexer/%.cpp src/lexer/%.h		| bin/
+bin/lexer/%.o		: src/lexer/%.cpp src/lexer/%.h			| bin/
 	$(CXX) -c $(CXXFLAGS) -Isrc -o $@ $<
 
 bin/				:
