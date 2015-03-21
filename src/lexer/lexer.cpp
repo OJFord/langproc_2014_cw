@@ -98,7 +98,7 @@ Token2& Lexer::consume(const lexeme& m){
 		std::cout << "Eating a " << Token2::name(m) << std::endl;
 
 	Token2	tk = Token2(m, Token2::name(m));
-	
+
 	Token2& la = lookahead(1);
 	if( la.lexID == tk.lexID ){
 		// Ensure buffer is never empty
@@ -125,7 +125,7 @@ Token2& Lexer::consume(const lexeme& m){
 		}
 	}
 	else{
-		throw InvalidTokenException(tk.matched, la.matched);
+		throw InvalidTokenException(tk.matched, la);
 	}
 	if(verbose)
 		std::cout << *labuf << std::endl;

@@ -9,21 +9,20 @@
 #include "parser/exceptions.h"
 
 
-InvalidTokenException::InvalidTokenException(std::string tk, std::string raw)
-: token(tk), input(raw){
+InvalidTokenException::InvalidTokenException(std::string expect, const Token2& raw)
+: expect(expect), input(raw){
 }
 
 InvalidTokenException::~InvalidTokenException(void) throw(){
 }
 
 const char* InvalidTokenException::what() const throw(){
-	return (input+" is not a valid "+token).c_str();
+	return (input.matched+" is not a valid "+expect).c_str();
 }
 
-UnexpectedEOFException::UnexpectedEOFException(void)
-: InvalidTokenException("<<EOF>>", ""){
+UnexpectedEOFException::UnexpectedEOFException(void){
 }
 
 const char* UnexpectedEOFException::what() const throw(){
-	return "File ended unexpectedly.";
+	return "Reached EOF unexpectedly.";
 }

@@ -11,21 +11,22 @@
 
 #include <exception>
 #include <string>
+#include "parser/tokens.h"
 
 class InvalidTokenException: public std::exception{
 public:
-	InvalidTokenException(std::string, std::string);
+	InvalidTokenException(std::string, const Token2&);
 	~InvalidTokenException(void) throw();
 	
 	virtual const char* what() const throw();
 	
 protected:
-	const std::string token;
-	const std::string input;
+	const std::string expect;
+	const Token2 input;
 private:
 };
 
-class UnexpectedEOFException: public InvalidTokenException{
+class UnexpectedEOFException{
 public:
 	UnexpectedEOFException(void);
 
