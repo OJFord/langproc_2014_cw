@@ -115,13 +115,79 @@ public:
 	}
 };
 
+class Identifier: public Terminal{
+public:
+	Identifier(Token2* tk)
+	: Terminal(*tk){
+	}
+};
+
+class Declarator;
+class DirectDeclarator: public NonTerminal{
+public:
+	DirectDeclarator(Identifier* i);
+	// This doesn't create a loop - *d must be enclosed in paren
+	//	whereas Declarator(DirectDeclarator*) needs no paren
+	DirectDeclarator(Declarator* d);
+	//d[ce?]
+	//d(ptl)
+	//d(il?)
+
+	std::string what(void) const;
+};
+
+class Declarator: public NonTerminal{
+public:
+	Declarator(DirectDeclarator* dd)
+	: NonTerminal(*dd){
+	}
+
+	/*// Not the worst naming ever, just incredibly meta..
+	Declarator(Pointer* p, DirectDeclarator* dd)
+	: NonTerminal( SyntaxTreePtrInitList({[, dd]}) ){
+	}*/
+
+	std::string what(void) const{
+		return "Declarator";
+	}
+};
+
+class InitialiserDeclarator: public NonTerminal{
+public:
+	InitialiserDeclarator(Declarator* d)
+	: NonTerminal(*d){
+	}
+	/*InitialiserDeclarator(Declarator* d, Initialiser* i)
+	: NonTerminal( SyntaxTreePtrInitList({d, i}) ){
+	}*/
+
+	std::string what(void) const{
+		return "Initialiser";
+	}
+};
+
+class InitialiserDeclaratorList: public NonTerminal{
+public:
+	InitialiserDeclaratorList(InitialiserDeclarator* idl)
+	: NonTerminal(*idl){
+	}
+	InitialiserDeclaratorList(InitialiserDeclarator* id,
+		InitialiserDeclaratorList* idl)
+	: NonTerminal( SyntaxTreePtrInitList({id, idl}) ){
+	}
+
+	std::string what(void) const{
+		return "InitialiserDeclaratorList";
+	}
+};
+
 class Declaration: public NonTerminal{
 public:
 	Declaration(DeclarationSpecifiers* ds)
 	: NonTerminal(*ds){
 	}
 	Declaration(DeclarationSpecifiers* ds, InitialiserDeclaratorList *idl)
-	: Non( SyntaxTreePtrInitList({ds, idl}) ){
+	: NonTerminal( SyntaxTreePtrInitList({ds, idl}) ){
 	}
 
 	std::string what(void) const{

@@ -34,6 +34,15 @@ private:
 	//void storage_class_specifier(SyntaxTree*, lexeme);
 	TypeSpecifier* type_specifier(void);
 	//void type_qualifier(SyntaxTree*, lexeme);
+	InitialiserDeclaratorList* initialiser_declarator_list(void);
+	InitialiserDeclarator* initialiser_declarator(void);
+	//Initialiser* initialiser(void);
+	Declarator* declarator(void);
+	DirectDeclarator* direct_declarator(void);
+	Identifier* identifier(void);
+	//ConstantExpression* constant_expression(void);
+	//ParamaterTypeList* paramater_type_list(void);
+	//IdentifierList* identifier_list(void);
 
 	Lexer* lexer;
 	SymbolTable& symtbl;

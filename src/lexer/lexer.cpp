@@ -98,17 +98,21 @@ Token2& Lexer::consume(const lexeme& m){
 		std::cout << "Eating a " << Token2::name(m) << std::endl;
 
 	Token2	tk = Token2(m, Token2::name(m));
+	
 	Token2& la = lookahead(1);
-
 	if( la.lexID == tk.lexID ){
+		// Ensure buffer is never empty
 		labuf->pop_front();
+		if(labuf->empty())
+			moreBuffer();
+
 		switch(tk.lexID){
 			case IDENTIFIER:
 				if( !symtbl->contains( matched() ) )
 					symtbl->insert(la);
 				break;
 				
-				// Scope changes
+			// Scope changes
 			case PUNCOP_BRACE_LEFT:
 				std::cout << *symtbl << std::endl;
 				symtbl->beginScope();
@@ -120,12 +124,11 @@ Token2& Lexer::consume(const lexeme& m){
 			default:;
 		}
 	}
-	else
+	else{
 		throw InvalidTokenException(tk.matched, la.matched);
+	}
 	if(verbose)
 		std::cout << *labuf << std::endl;
-	if(labuf->empty())
-		moreBuffer();
 	return la;
 }
 
