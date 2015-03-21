@@ -2,22 +2,22 @@ LEX			= flexc++
 CXX			= /usr/local/bin/g++-4.6
 CXXFLAGS	= -std=gnu++0x -Wall -Wextra -pedantic -g #-Wfatal-errors
 
-SRC_C		:= $(wildcard src/*.cpp)
-SRC_P 		:= src/parser/$(wildcard *.cpp)
-SRC_L		:= src/lexer/$(wildcard *.cpp)
+SRC_C		:= $(wildcard src/*.{cpp,h})
+SRC_P		:= $(wildcard src/parser/*.cpp)
+SRC_L		:= $(wildcard src/lexer/*.cpp)
 
-OBJ_P		:= $(patsubst src/%.cpp, bin/%.o, $(wildcard src/parser/*.cpp))
-OBJ_L		:= $(patsubst src/%.cpp, bin/%.o, $(wildcard src/lexer/*.cpp))
+OBJ_P		:= $(patsubst src/%.cpp, bin/%.o, $(SRC_P))
+OBJ_L		:= $(patsubst src/%.cpp, bin/%.o, $(SRC_L))
 
 build				: bin/compiler
 
-bin/compiler		: $(SRC_C) $(OBJ_P) $(OBJ_L)	| bin/
+bin/compiler		: $(SRC_C) $(OBJ_P) $(OBJ_L)		| bin/
 	$(CXX) $(SRC_C) $(CXXFLAGS) $(OBJ_L) $(OBJ_P) -Isrc -o bin/compiler
 
-bin/parser/%.o		: src/parser/%.cpp $(OBJ_L)	| bin/
+bin/parser/%.o		: src/parser/%.cpp src/parser/%.h	| bin/ $(OBJ_L)
 	$(CXX) -c $(CXXFLAGS) -Isrc -o $@ $<
 
-bin/lexer/%.o		: src/lexer/%.cpp	| bin/
+bin/lexer/%.o		: src/lexer/%.cpp src/lexer/%.h		| bin/
 	$(CXX) -c $(CXXFLAGS) -Isrc -o $@ $<
 
 bin/				:
@@ -28,10 +28,10 @@ bin/				:
 src/lexer/lex.cpp	: src/lexer/C89.lex
 	./flexit.sh
 
-all					: build test
+all					: build test_compile
 
 clean				:
-	rm -r bin; make all
+	rm -r bin; make build
 
 test_compile		: build
 	cd test; make build
