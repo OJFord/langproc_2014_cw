@@ -14,7 +14,7 @@
 
 class InvalidTokenException: public std::exception{
 public:
-	InvalidTokenException(std::string tk, std::string raw);
+	InvalidTokenException(std::string, std::string);
 	~InvalidTokenException(void) throw();
 	
 	virtual const char* what() const throw();
@@ -23,6 +23,13 @@ protected:
 	const std::string token;
 	const std::string input;
 private:
+};
+
+class UnexpectedEOFException: public InvalidTokenException{
+public:
+	UnexpectedEOFException(void);
+
+	const char* what() const throw();
 };
 
 #endif /* defined(__CARM_Compiler__exceptions__) */

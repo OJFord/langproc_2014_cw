@@ -117,14 +117,13 @@ public:
 
 class Declaration: public NonTerminal{
 public:
-	Declaration(DeclarationSpecifiers* ds, Terminal* semi)
-	: NonTerminal( SyntaxTreePtrInitList({ds, semi}) ){
-		
-		if( semi->what()!="PUNCOP_SEMICOLON" )
-			throw InvalidTokenException(";", semi->raw());
+	Declaration(DeclarationSpecifiers* ds)
+	: NonTerminal(*ds){
 	}
-	//Declaration(DeclarationSpecifiers, InitialiserDeclaratorList, TPUNCOP_SEMICOLON);
-	
+	Declaration(DeclarationSpecifiers* ds, InitialiserDeclaratorList *idl)
+	: Non( SyntaxTreePtrInitList({ds, idl}) ){
+	}
+
 	std::string what(void) const{
 		return "Declaration";
 	}

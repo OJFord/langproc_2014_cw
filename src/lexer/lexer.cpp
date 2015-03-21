@@ -103,8 +103,6 @@ Token2& Lexer::consume(const lexeme& m){
 	if( la.lexID == tk.lexID ){
 		labuf->pop_front();
 		switch(tk.lexID){
-				// Add new identifier to symbol table -- it might not be declared
-				//	*properly*, but it's there.
 			case IDENTIFIER:
 				if( !symtbl->contains( matched() ) )
 					symtbl->insert(la);
@@ -126,6 +124,8 @@ Token2& Lexer::consume(const lexeme& m){
 		throw InvalidTokenException(tk.matched, la.matched);
 	if(verbose)
 		std::cout << *labuf << std::endl;
+	if(labuf->empty())
+		moreBuffer();
 	return la;
 }
 

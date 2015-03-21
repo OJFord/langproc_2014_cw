@@ -26,6 +26,8 @@ std::string SyntaxTree::computeRaw(SyntaxTreePtrInitList il){
 
 Terminal::Terminal(const Token2& tk)
 : SyntaxTree(tk.matched), _what(tk.lexed){
+	if(what()=="EOF")
+		throw UnexpectedEOFException();
 }
 
 std::string Terminal::what(void) const{
@@ -36,15 +38,17 @@ TranslationUnit* Parser::translation_unit(void){
 	switch( lexer->lookahead().lexID ){
 		case LEX_EOF:
 			return nullptr;
+		
 		default:
-			TranslationUnit* tutree = translation_unit();
 			ExternalDeclaration* edtree = external_declaration();
-			if( tutree!=nullptr )
-				return new TranslationUnit(tutree, edtree);
-			else if( edtree!=nullptr )
-				return new TranslationUnit(edtree);
-			else
+			if( !edtree )
 				return nullptr;
+			else{
+				TranslationUnit* tutree = translation_unit();
+				return (tutree)
+				? new TranslationUnit(tutree, edtree)
+				: new TranslationUnit(edtree);
+			}
 	}
 }
 
@@ -54,54 +58,59 @@ ExternalDeclaration* Parser::external_declaration(void){
 	//if( fdtree!=nullptr )
 	//	return new FunctionDefinition(fdtree);
 	//else
-	if( dtree!=nullptr )
-		return new ExternalDeclaration(dtree);
-	else
-		return nullptr;
+	return (dtree)
+	? new ExternalDeclaration(dtree)
+	: nullptr;
 }
 
 //void Parser::function_definition(void){}
 Declaration* Parser::declaration(void){
 	DeclarationSpecifiers* dstree = declaration_specifiers();
 	if( dstree==nullptr )
-		return nullptr;
-	//SyntaxTree* idltree= initialiser_declarator_list();
-	Terminal* semi = new Terminal( lexer->consume(PUNCOP_SEMICOLON) );
-	//if( idltree!=nullptr )
-	//	return new Declaration(dstree, idltree);
-	//else
-	return new Declaration(dstree, semi);
+		return nullptr;		// Both rules need dec spec
+	
+	SyntaxTree* idltree= initialiser_declarator_list();
+
+	// Expect semicolon from either rule
+	lexer->consume(PUNCOP_SEMICOLON);
+	return (idltree)
+	? new Declaration(dstree, idltree)
+	: new Declaration(dstree);
 }
 
 DeclarationSpecifiers* Parser::declaration_specifiers(){
 	//SyntaxTree* scstree= storage_class_specifier();
 	TypeSpecifier* tstree = type_specifier();
+	if(tstree){
+		DeclarationSpecifiers* dstree = declaration_specifiers();
+		return (dstree)
+		? new DeclarationSpecifiers(tstree, dstree)
+		: new DeclarationSpecifiers(tstree);
+	}
+	else
+		return nullptr;
 	//SyntaxTree* tqtree = type_qualifier();
-	DeclarationSpecifiers* dstree = declaration_specifiers();
+	
 
 	/*if( scstree!=nullptr )
 		return dstree!=nullptr
 		? new DeclarationSpecifiers(scstree, dstree)
 		: new DeclarationSpecifiers(scstree);
 	
-	else*/ if( tstree!=nullptr )
-		return dstree!=nullptr
-		? new DeclarationSpecifiers(tstree, dstree)
-		: new DeclarationSpecifiers(tstree);
+	else*/
+		
 	
 	/*else if( tqtree!=nullptr )
 		return dstree!=nullptr
 		? new DeclarationSpecifiers(tqtree, dstree)
 		: new DeclarationSpecifiers(tqtree);
-	*/ 
-	else
-		return nullptr;
+	*/
 }
 
 //SyntaxTree* Parser::storage_class_specifier(void){}
 
 TypeSpecifier* Parser::type_specifier(void){
-	Token2 tk = lexer->lookahead();
+	Token2 tk = lexer->lookahead(1);
 
 	switch(tk.lexID){
 		case KW_VOID:

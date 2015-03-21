@@ -19,3 +19,11 @@ InvalidTokenException::~InvalidTokenException(void) throw(){
 const char* InvalidTokenException::what() const throw(){
 	return (input+" is not a valid "+token).c_str();
 }
+
+UnexpectedEOFException::UnexpectedEOFException(void)
+: InvalidTokenException("<<EOF>>", ""){
+}
+
+const char* UnexpectedEOFException::what() const throw(){
+	return "File ended unexpectedly.";
+}

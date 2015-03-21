@@ -34,7 +34,7 @@ private:
 	//void storage_class_specifier(SyntaxTree*, lexeme);
 	TypeSpecifier* type_specifier(void);
 	//void type_qualifier(SyntaxTree*, lexeme);
-	
+
 	Lexer* lexer;
 	SymbolTable& symtbl;
 };
