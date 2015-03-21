@@ -40,7 +40,6 @@ class Terminal: public SyntaxTree{
 public:
 	Terminal(const Token2&); 
 	
-
 	Token2 token(void) const;
 	// Returns terminal name
 	std::string what(void) const;
@@ -55,8 +54,8 @@ private:
 class NonTerminal: public SyntaxTree{
 public:
 	// Copy-construct
-	NonTerminal(const SyntaxTree& stp);
-
+	NonTerminal(const NonTerminal&) =default;
+	NonTerminal(const SyntaxTree&);
 	NonTerminal(const SyntaxTreePtrInitList&);
 
 	// Returns name of production
