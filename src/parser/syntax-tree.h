@@ -21,17 +21,13 @@ typedef std::initializer_list<SyntaxTree*> SyntaxTreePtrInitList;
 
 class SyntaxTree{
 public:
-	SyntaxTree(std::string raw);
-	SyntaxTree(SyntaxTreePtrInitList sts);
+	SyntaxTree(std::string);
+	SyntaxTree(SyntaxTreePtrInitList);
 	
-	static std::string computeRaw(SyntaxTreePtrInitList il);
+	static std::string computeRaw(SyntaxTreePtrInitList);
 	
-	virtual std::string what(void)	const{
-		return "SyntaxTree";
-	}
-	virtual std::string raw(void)	const{
-		return _raw;
-	}
+	virtual std::string what(void)	const;
+	virtual std::string raw(void)	const;
 
 protected:
 	const std::string _raw;
@@ -42,12 +38,15 @@ private:
 
 class Terminal: public SyntaxTree{
 public:
-	Terminal(const Token2& tk); 
+	Terminal(const Token2&); 
 	
+
+	Token2 token(void) const;
 	// Returns terminal name
 	std::string what(void) const;
 
 protected:
+	const Token2 _token;
 	const std::string _what;
 
 private:
@@ -56,173 +55,125 @@ private:
 class NonTerminal: public SyntaxTree{
 public:
 	// Copy-construct
-	NonTerminal(const SyntaxTree& stp)
-	: SyntaxTree(stp){
-	}
+	NonTerminal(const SyntaxTree& stp);
 
-	NonTerminal(const SyntaxTreePtrInitList& il)
-	: SyntaxTree(il){
-	}
+	NonTerminal(const SyntaxTreePtrInitList&);
+
+	// Returns name of production
+	virtual std::string what(void) const =0;
 
 private:
 };
 
 class TypeSpecifier: public NonTerminal{
 public:
-	// One branch - copy-construct
-	TypeSpecifier(const Terminal* t): NonTerminal(*t){
-		std::string ts = t->what();
-
-		if(	ts != "KW_VOID"
-		&&	ts != "KW_CHAR"
-		&&	ts != "KW_SHORT"
-		&&	ts != "KW_INT"
-		&&	ts != "KW_LONG"
-		&&	ts != "KW_FLOAT"
-		&&	ts != "KW_DOUBLE"
-		&&	ts != "KW_SIGNED"
-		&&	ts != "KW_UNSIGNED"
-		){	// Not the Terminal we're looking for
-			throw InvalidTokenException(t->raw(), what());
-		}
-	}
-
+	TypeSpecifier(const Terminal*);
 	// structunionspec
 	// enumspec
 	// typedefname
 	
-	std::string what(void) const{
-		return "TypeSpecifier";
-	}
+	std::string what(void) const;
+
+private:
 };
 
 class DeclarationSpecifiers: public NonTerminal{
 public:
-	// Single ast branch is pointless, just copy-construct to produce
-	DeclarationSpecifiers(TypeSpecifier* ts)
-	: NonTerminal(*ts){
-	}
-	DeclarationSpecifiers(TypeSpecifier* ts, DeclarationSpecifiers* ds)
-	: NonTerminal( SyntaxTreePtrInitList({ts, ds}) ){
-	}
+	DeclarationSpecifiers(TypeSpecifier*);
+	DeclarationSpecifiers(TypeSpecifier*, DeclarationSpecifiers*);
+	
 	// tq
 	// tq ds
 	// sc
 	// sc ds
 	
-	std::string what(void) const{
-		return "DeclarationSpecifiers";
-	}
+	std::string what(void) const;
+
+private:
 };
 
 class Identifier: public Terminal{
 public:
-	Identifier(Token2* tk)
-	: Terminal(*tk){
-	}
+	Identifier(Token2*);
+
+private:
 };
 
 class Declarator;
 class DirectDeclarator: public NonTerminal{
 public:
-	DirectDeclarator(Identifier* i);
+	DirectDeclarator(Identifier*);
 	// This doesn't create a loop - *d must be enclosed in paren
 	//	whereas Declarator(DirectDeclarator*) needs no paren
-	DirectDeclarator(Declarator* d);
+	DirectDeclarator(Declarator*);
 	//d[ce?]
 	//d(ptl)
 	//d(il?)
 
 	std::string what(void) const;
+
+private:
 };
 
 class Declarator: public NonTerminal{
 public:
-	Declarator(DirectDeclarator* dd)
-	: NonTerminal(*dd){
-	}
+	Declarator(DirectDeclarator*);
+	//Declarator(Pointer*, DirectDeclarator*);
 
-	/*// Not the worst naming ever, just incredibly meta..
-	Declarator(Pointer* p, DirectDeclarator* dd)
-	: NonTerminal( SyntaxTreePtrInitList({[, dd]}) ){
-	}*/
+	std::string what(void) const;
 
-	std::string what(void) const{
-		return "Declarator";
-	}
+private:
 };
 
 class InitialiserDeclarator: public NonTerminal{
 public:
-	InitialiserDeclarator(Declarator* d)
-	: NonTerminal(*d){
-	}
-	/*InitialiserDeclarator(Declarator* d, Initialiser* i)
-	: NonTerminal( SyntaxTreePtrInitList({d, i}) ){
-	}*/
+	InitialiserDeclarator(Declarator*);
+	//InitialiserDeclarator(Declarator*, Initialiser*);
 
-	std::string what(void) const{
-		return "Initialiser";
-	}
+	std::string what(void) const;
+
+private:
 };
 
 class InitialiserDeclaratorList: public NonTerminal{
 public:
-	InitialiserDeclaratorList(InitialiserDeclarator* idl)
-	: NonTerminal(*idl){
-	}
-	InitialiserDeclaratorList(InitialiserDeclarator* id,
-		InitialiserDeclaratorList* idl)
-	: NonTerminal( SyntaxTreePtrInitList({id, idl}) ){
-	}
+	InitialiserDeclaratorList(InitialiserDeclarator*);
+	InitialiserDeclaratorList(
+		InitialiserDeclarator*, InitialiserDeclaratorList*);
 
-	std::string what(void) const{
-		return "InitialiserDeclaratorList";
-	}
+	std::string what(void) const;
+
+private:
 };
 
 class Declaration: public NonTerminal{
 public:
-	Declaration(DeclarationSpecifiers* ds)
-	: NonTerminal(*ds){
-	}
-	Declaration(DeclarationSpecifiers* ds, InitialiserDeclaratorList *idl)
-	: NonTerminal( SyntaxTreePtrInitList({ds, idl}) ){
-	}
+	Declaration(DeclarationSpecifiers*);
+	Declaration(DeclarationSpecifiers*, InitialiserDeclaratorList*);
 
-	std::string what(void) const{
-		return "Declaration";
-	}
+	std::string what(void) const;
+
+private:
 };
 
 class ExternalDeclaration: public NonTerminal{
 public:
-	// One branch - copy-construct
-	ExternalDeclaration(Declaration* d)
-	: NonTerminal(*d){
-	}
-	//ExternalDeclaration(FunctionDefinition);
+	ExternalDeclaration(Declaration*);
+	//ExternalDeclaration(FunctionDefinition*);
 	
-	std::string what(void) const{
-		return "ExternalDeclaration";
-	}
+	std::string what(void) const;
+
+private:
 };
 
 class TranslationUnit: public NonTerminal{
 public:
-	TranslationUnit(TranslationUnit* tu, ExternalDeclaration* ed)
-	: NonTerminal( SyntaxTreePtrInitList({tu, ed}) ){
-	}
-
-	// One branch - copy-construct
-	TranslationUnit(ExternalDeclaration* ed)
-	: NonTerminal(*ed){
-	}
+	TranslationUnit(TranslationUnit* tu, ExternalDeclaration*);
+	TranslationUnit(ExternalDeclaration*);
 	
-	std::string what(void) const{
-		return "TranslationUnit";
-	}
-};
+	std::string what(void) const;
 
+private:
+};
 
 #endif /* defined(__CARM_Compiler__syntax_tree__) */

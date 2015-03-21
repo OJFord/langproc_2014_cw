@@ -24,14 +24,81 @@ std::string SyntaxTree::computeRaw(SyntaxTreePtrInitList il){
 	return ret;
 }
 
+std::string SyntaxTree::what(void)	const{
+	return "SyntaxTree";
+}
+
+std::string SyntaxTree::raw(void)	const{
+	return _raw;
+}
+
 Terminal::Terminal(const Token2& tk)
-: SyntaxTree(tk.matched), _what(tk.lexed){
+: SyntaxTree(tk.matched), _token(tk), _what(tk.lexed){
 	if(what()=="EOF")
 		throw UnexpectedEOFException();
 }
 
+Token2 Terminal::token(void) const{
+	return _token;
+}
+
 std::string Terminal::what(void) const{
 	return _what;
+}
+
+NonTerminal::NonTerminal(const SyntaxTree& stp)
+: SyntaxTree(stp){
+}
+
+NonTerminal::NonTerminal(const SyntaxTreePtrInitList& il)
+: SyntaxTree(il){
+}
+
+TypeSpecifier::TypeSpecifier(const Terminal* t): NonTerminal(*t){
+	std::string ts = t->what();
+
+	if(	ts != "KW_VOID"
+	&&	ts != "KW_CHAR"
+	&&	ts != "KW_SHORT"
+	&&	ts != "KW_INT"
+	&&	ts != "KW_LONG"
+	&&	ts != "KW_FLOAT"
+	&&	ts != "KW_DOUBLE"
+	&&	ts != "KW_SIGNED"
+	&&	ts != "KW_UNSIGNED"
+	){	// Not the Terminal we're looking for
+		throw InvalidTokenException("type specifier", t->token());
+	}
+}
+
+// structunionspec
+// enumspec
+// typedefname
+
+std::string TypeSpecifier::what(void) const{
+	return "TypeSpecifier";
+}
+
+DeclarationSpecifiers::DeclarationSpecifiers(TypeSpecifier* ts)
+: NonTerminal(*ts){
+}
+DeclarationSpecifiers::DeclarationSpecifiers(TypeSpecifier* ts,
+	DeclarationSpecifiers* ds)
+: NonTerminal( SyntaxTreePtrInitList({ts, ds}) ){
+}
+// tq
+// tq ds
+// sc
+// sc ds
+
+std::string DeclarationSpecifiers::what(void) const{
+	return "DeclarationSpecifiers";
+}
+
+Identifier::Identifier(Token2* tk)
+: Terminal(*tk){
+	if(tk->lexID != IDENTIFIER)
+		throw InvalidTokenException("Identifier", *tk);
 }
 
 DirectDeclarator::DirectDeclarator(Identifier* i)
@@ -44,249 +111,88 @@ DirectDeclarator::DirectDeclarator(Declarator* d)
 : NonTerminal(*d){
 }
 
+//d[ce?]
+//d(ptl)
+//d(il?)
+
 std::string DirectDeclarator::what(void) const{
 	return "DirectDeclarator";
 }
 
-TranslationUnit* Parser::translation_unit(void){
-	switch( lexer->lookahead().lexID ){
-		case LEX_EOF:
-			return nullptr;
-		
-		default:
-			ExternalDeclaration* edtree = external_declaration();
-			if(edtree){
-				
-				TranslationUnit* tutree = translation_unit();
-				if(verbose){
-					std::cout << "Matched " << edtree->what() << std::endl;
-					if(tutree)
-						std::cout << "Matched " << tutree->what() << std::endl;
-				}
-				
-				return (tutree)
-				? new TranslationUnit(tutree, edtree)
-				: new TranslationUnit(edtree);
-			}
-			else{
-				return nullptr;
-			}
-	}
+Declarator::Declarator(DirectDeclarator* dd)
+: NonTerminal(*dd){
 }
 
-ExternalDeclaration* Parser::external_declaration(void){
-	//SyntaxTree* fdtree = function_definition();
-	Declaration* dtree = declaration();
-	if(verbose && dtree)
-		std::cout << "Matched " << dtree->what() << std::endl;
-	//if( fdtree!=nullptr )
-	//	return new FunctionDefinition(fdtree);
-	//else
-	return (dtree)
-	? new ExternalDeclaration(dtree)
-	: nullptr;
+/*
+Declarator::Declarator(Pointer* p, DirectDeclarator* dd)
+: NonTerminal( SyntaxTreePtrInitList({[, dd]}) ){
+}
+*/
+
+std::string Declarator::what(void) const{
+	return "Declarator";
 }
 
-//void Parser::function_definition(void){}
-Declaration* Parser::declaration(void){
-	DeclarationSpecifiers* dstree = declaration_specifiers();
-	if(!dstree)
-		return nullptr;		// Both rules need dec spec
-	else if(verbose)
-		std::cout << "Matched " << dstree->what() << std::endl;
-
-	InitialiserDeclaratorList* idltree = initialiser_declarator_list();
-	if(verbose && idltree)
-		std::cout << "Matched " << idltree->what() << std::endl;
-
-	// Expect semicolon from either rule
-	lexer->consume(PUNCOP_SEMICOLON);
-	
-	return (idltree)
-	? new Declaration(dstree, idltree)
-	: new Declaration(dstree);
+InitialiserDeclarator::InitialiserDeclarator(Declarator* d)
+: NonTerminal(*d){
 }
 
-InitialiserDeclaratorList* Parser::initialiser_declarator_list(void){
-	InitialiserDeclarator* idtree = initialiser_declarator();
-	
-	if(idtree){
-		if(verbose)
-			std::cout << "Matched " << idtree->what() << std::endl;
-		
-		InitialiserDeclaratorList* idltree = initialiser_declarator_list();
-		if(verbose)
-			std::cout << "Matched " << idltree->what() << std::endl;
+/*
+InitialiserDeclarator::InitialiserDeclarator(Declarator* d,
+	Initialiser* i)
+: NonTerminal( SyntaxTreePtrInitList({d, i}) ){
+}
+*/
 
-		return (idltree)
-		?	new InitialiserDeclaratorList(idtree, idltree)
-		:	new InitialiserDeclaratorList(idtree);
-	}
-	else
-		return nullptr;
+std::string InitialiserDeclarator::what(void) const{
+	return "Initialiser";
 }
 
-InitialiserDeclarator* Parser::initialiser_declarator(void){
-	Declarator* dtree = declarator();
-	if(dtree){
-		if(verbose)
-			std::cout << "Matched " << dtree->what() << std::endl;
-		/*Initialiser* i = initialiser();
-		if(i){
-			lexer->consume(PUNCOP_EQUALS);
-			return new InitialiserDeclarator(d, i);
-		}
-		else*/
-			return new InitialiserDeclarator(dtree);
-	}
-	else
-		return nullptr;
+InitialiserDeclaratorList::InitialiserDeclaratorList(
+	InitialiserDeclarator* idl)
+: NonTerminal(*idl){
 }
 
-Declarator* Parser::declarator(void){
-	//Pointer* ptree = pointer()	// so meta..
-	
-	DirectDeclarator* ddtree = direct_declarator();
-	if(verbose && ddtree)
-		std::cout << "Matched " << ddtree->what() << std::endl;
-	
-	return (ddtree)
-	?	/*(pp)
-		? 	new Declarator(ptree, ddtree)
-		:*/	new Declarator(ddtree)
-	:	nullptr;
+InitialiserDeclaratorList::InitialiserDeclaratorList(
+	InitialiserDeclarator* id, InitialiserDeclaratorList* idl)
+: NonTerminal( SyntaxTreePtrInitList({id, idl}) ){
 }
 
-DirectDeclarator* Parser::direct_declarator(void){
-	DirectDeclarator* dd;
-
-	if( lexer->lookahead(1).lexID == PUNCOP_PAREN_LEFT ){
-		lexer->consume(PUNCOP_PAREN_LEFT);
-		
-		Declarator* dtree = declarator();
-		if(verbose && dtree)
-			std::cout << "Matched " << dtree->what() << std::endl;
-		dd = new DirectDeclarator(dtree);
-		
-		lexer->consume(PUNCOP_PAREN_RIGHT);
-	}
-	else{
-		Identifier* id = identifier();
-		if(id){
-			if(verbose)
-				std::cout << "Matched " << id->what() << std::endl;
-			
-			dd = new DirectDeclarator(id);
-			if(verbose && dd)
-				std::cout << "Matched " << id->what() << std::endl;	
-		}
-		else
-			return nullptr;
-	}
-
-	//ConstantExpression* ce;
-	//ParameterTypeList* ptl;
-	//IdentifierList* il;
-	// new lookahead, we already matched&consumed whatever above
-	switch( lexer->lookahead(1).lexID ){
-		case PUNCOP_BRACKET_LEFT:
-			/*lexer->consume(PUNCOP_BRACK_LEFT);
-			ce = constant_expression();
-			lexer->consume(PUNCOP_BRACK_RIGHT);
-			// constant expr optional, so pass even if null since carrys
-			//	the information " `[]` was matched " implicitly
-			return new DirectDeclarator(dd, ce);
-			*/throw "Not implemented";
-
-		case PUNCOP_PAREN_LEFT:
-			/*lexer->consume(PUNCOP_PAREN_LEFT);
-			ptl = parameter_type_list();
-			if(!ptl)
-				il	= identifier_list();
-			lexer->consume(PUNCOP_PAREN_RIGHT);
-			// id list optional, so pass even if null since carrys
-			//	the information " `()` was matched " implicitly
-			return new DirectDeclarator(dd, (ptl)?ptl:il );
-			*/throw "Not implemented";
-
-		default:
-			return dd;
-	}
+std::string InitialiserDeclaratorList::what(void) const{
+	return "InitialiserDeclaratorList";
 }
 
-Identifier* Parser::identifier(void){
-	try{
-		Token2 tk = lexer->consume(IDENTIFIER);
-		return new Identifier(&tk);
-	} catch(InvalidTokenException& e){
-		return nullptr;
-	}
+Declaration::Declaration(DeclarationSpecifiers* ds)
+: NonTerminal(*ds){
 }
 
-DeclarationSpecifiers* Parser::declaration_specifiers(void){
-	//SyntaxTree* scstree= storage_class_specifier();
-	TypeSpecifier* tstree = type_specifier();
-	if(tstree){
-		
-		DeclarationSpecifiers* dstree = declaration_specifiers();
-		if(verbose){
-			std::cout << "Matched " << tstree->what() << std::endl;
-			if(dstree)
-				std::cout << "Matched " << dstree->what() << std::endl;
-		}
-
-		return (dstree)
-		?	new DeclarationSpecifiers(tstree, dstree)
-		:	new DeclarationSpecifiers(tstree);
-	}
-	else
-		return nullptr;
-	//SyntaxTree* tqtree = type_qualifier();
-	
-
-	/*if( scstree!=nullptr )
-		return dstree!=nullptr
-		? new DeclarationSpecifiers(scstree, dstree)
-		: new DeclarationSpecifiers(scstree);
-	
-	else*/
-		
-	
-	/*else if( tqtree!=nullptr )
-		return dstree!=nullptr
-		? new DeclarationSpecifiers(tqtree, dstree)
-		: new DeclarationSpecifiers(tqtree);
-	*/
+Declaration::Declaration(DeclarationSpecifiers* ds,
+	InitialiserDeclaratorList *idl)
+: NonTerminal( SyntaxTreePtrInitList({ds, idl}) ){
 }
 
-//SyntaxTree* Parser::storage_class_specifier(void){}
-
-TypeSpecifier* Parser::type_specifier(void){
-	Token2 tk = lexer->lookahead(1);
-
-	switch(tk.lexID){
-		case KW_VOID:
-		case KW_CHAR:
-		case KW_SHORT:
-		case KW_INT:
-		case KW_LONG:
-		case KW_FLOAT:
-		case KW_DOUBLE:
-		case KW_SIGNED:
-		case KW_UNSIGNED:
-			lexer->consume(tk.lexID);
-			return new TypeSpecifier( new Terminal(tk) );
-
-		default:
-			/*SyntaxTree* sustree= struct_union_specifier();
-			SyntaxTree* estree = enum_specifier();
-			SyntaxTree* tdntree= typedef_name();
-			return	sustree!=nullptr? new TypeSpecifier(sustree)
-			:		estree!=nullptr	? new TypeSpecifier(estree)
-			:		tdntree!=nullptr? new TypeSpecifier(tdntree)
-			: nullptr
-			*/return nullptr;
-	}
+std::string Declaration::what(void) const{
+	return "Declaration";
 }
 
-//SyntaxTree* Parser::type_qualifier(void){}
+ExternalDeclaration::ExternalDeclaration(Declaration* d)
+: NonTerminal(*d){
+}
+
+//ExternalDeclaration::ExternalDeclaration(FunctionDefinition);
+
+std::string ExternalDeclaration::what(void) const{
+	return "ExternalDeclaration";
+}
+
+TranslationUnit::TranslationUnit(TranslationUnit* tu, ExternalDeclaration* ed)
+: NonTerminal( SyntaxTreePtrInitList({tu, ed}) ){
+}
+
+TranslationUnit::TranslationUnit(ExternalDeclaration* ed)
+: NonTerminal(*ed){
+}
+
+std::string TranslationUnit::what(void) const{
+	return "TranslationUnit";
+}
