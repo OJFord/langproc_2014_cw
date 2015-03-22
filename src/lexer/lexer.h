@@ -17,7 +17,6 @@
 
 #include "Scanner.h"
 #include "parser/tokens.h"
-//#include "parser/syntax-tree.h"		//this feels dirty.. !TODO restructure stuff..
 #include "lexer/exceptions.h"
 #include "parser/exceptions.h"
 

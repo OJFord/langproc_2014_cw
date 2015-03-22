@@ -87,8 +87,12 @@ Declaration* Parser::declaration(void){
 	if(verbose && idltree)
 		std::cout << "Matched " << idltree->what() << std::endl;
 
-	// Expect semicolon from either rule
-	lexer->consume(PUNCOP_SEMICOLON);
+	try{
+		lexer->consume(PUNCOP_SEMICOLON);
+	}
+	catch(InvalidTokenException& e){
+		reportInvalidToken(e);
+	}
 	
 	return (idltree)
 	? new Declaration(dstree, idltree)
@@ -179,12 +183,13 @@ StatementList* Parser::statement_list(void){
 
 
 Initialiser* Parser::initialiser(void){
-	if( lexer->lookahead(1).lexID == PUNCOP_BRACE_LEFT ){
-		lexer->consume(PUNCOP_BRACE_LEFT);
+	Token& tk = lexer->lookahead();
+	if( tk.lexID == PUNCOP_BRACE_LEFT ){
+		lexer->consume(tk.lexID);
 		
 		InitialiserList* iltree = initialiser_list();
 		if(!iltree)
-			throw InvalidTokenException(iltree->what(), lexer->lookahead(1));
+			throw InvalidTokenException(iltree->what(), tk.matched, lexer->lookahead(1));
 		else if(verbose)
 			std::cout << "Matched " << iltree->what() << std::endl;
 
@@ -554,17 +559,17 @@ ConditionalExpression* Parser::conditional_expression(void){
 		
 	if( lexer->lookahead().lexID == PUNCOP_TERNARY ){
 		
-		lexer->consume(PUNCOP_TERNARY);
+		Token& tt = lexer->consume(PUNCOP_TERNARY);
 		Expression* etree = expression();
 		if(!etree)
-			throw InvalidTokenException(etree->what(), lexer->lookahead());
+			throw InvalidTokenException(etree->what(), tt.matched, lexer->lookahead());
 		else if(verbose)
 			std::cout << "Matched " << etree->what() << std::endl;
 		
-		lexer->consume(PUNCOP_COLON);
+		Token& tc = lexer->consume(PUNCOP_COLON);
 		ConditionalExpression* cetree = conditional_expression();
 		if(!cetree)
-			throw InvalidTokenException(cetree->what(), lexer->lookahead());
+			throw InvalidTokenException(cetree->what(), tc.matched, lexer->lookahead());
 		else if(verbose)
 			std::cout << "Matched " << cetree->what() << std::endl;
 		
@@ -637,7 +642,7 @@ UnaryExpression* Parser::unary_expression(void){
 			lexer->consume(tk.lexID);
 			CastExpression* cetree = cast_expression();
 			if(!cetree)
-				throw InvalidTokenException(cetree->what(), lexer->lookahead(1));
+				throw InvalidTokenException(cetree->what(), tk.matched, lexer->lookahead(1));
 			else if(verbose)
 				std::cout << "Matched " << cetree->what() << std::endl;
 			return new UnaryExpression(new Terminal(tk), cetree);
@@ -703,7 +708,7 @@ PostfixExpression* Parser::postfix_expression(void){
 				Expression* etree = expression();
 				
 				if(!etree)
-					throw InvalidTokenException(etree->what(), lexer->lookahead());
+					throw InvalidTokenException(etree->what(), next->matched, lexer->lookahead());
 				else if(verbose)
 					std::cout << "Matched " << etree->what() << std::endl;
 				
@@ -716,7 +721,7 @@ PostfixExpression* Parser::postfix_expression(void){
 				ArgumentExpressionList* aeltree = argument_expression_list();
 				
 				if(!aeltree)
-					throw InvalidTokenException(aeltree->what(), lexer->lookahead());
+					throw InvalidTokenException(aeltree->what(), next->matched, lexer->lookahead());
 				else if(verbose)
 					std::cout << "Matched " << aeltree->what() << std::endl;
 				
@@ -730,7 +735,7 @@ PostfixExpression* Parser::postfix_expression(void){
 				Identifier* id = identifier();
 				
 				if(!id)
-					throw InvalidTokenException(id->what(), lexer->lookahead());
+					throw InvalidTokenException(id->what(), next->matched, lexer->lookahead());
 				else if(verbose)
 					std::cout << "Matched " << id->what() << std::endl;
 				
@@ -774,7 +779,7 @@ PrimaryExpression* Parser::primary_expression(void){
 		return new PrimaryExpression(sl);
 	}
 	
-	lexer->consume(PUNCOP_PAREN_LEFT);
+	Token& tpl = lexer->consume(PUNCOP_PAREN_LEFT);
 	Expression* e = expression();
 	if(sl){
 		if(verbose)
@@ -783,7 +788,7 @@ PrimaryExpression* Parser::primary_expression(void){
 		return new PrimaryExpression(sl);
 	}
 	else
-		throw InvalidTokenException(e->what(), lexer->lookahead());
+		throw InvalidTokenException(e->what(), tpl.matched, lexer->lookahead());
 }
 
 WideStringLiteral* Parser::wide_string_literal(void){

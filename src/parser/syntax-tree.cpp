@@ -102,7 +102,7 @@ std::string NonTerminal::what(void) const{
 Identifier::Identifier(Token* tk)
 : Terminal(*tk){
 	if(tk->lexID != IDENTIFIER)
-		throw InvalidTokenException("Identifier", *tk);
+		throw InvalidTokenException(what(), "previous symbol", *tk);
 }
 Identifier::Identifier(Terminal* t)
 : Terminal( SyntaxTreePtrInitList({t}) ){
@@ -153,7 +153,7 @@ FloatingConstant::FloatingConstant(Token* tk)
 	&&	!boost::regex_match(
 			tk->matched, boost::regex("[0-9]+[eE][+-]?[0-9]+[flFL]?"))
 	){
-		throw InvalidTokenException(what(), *tk);
+		throw InvalidTokenException(what(), "previous symbol", *tk);
 	}
 }
 bool FloatingConstant::isFloat(std::string fc){
@@ -664,7 +664,7 @@ TypeSpecifier::TypeSpecifier(Terminal* t)
 	&&	lex != KW_SIGNED
 	&&	lex != KW_UNSIGNED
 	){	// Not the Terminal we're looking for
-		throw InvalidTokenException(what(), t->token());
+		throw InvalidTokenException(what(), "previous symbol", t->token());
 	}
 }
 

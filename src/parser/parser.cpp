@@ -31,7 +31,7 @@ void ErrorStack::report(const Error& e){
 std::ostream& operator<<(std::ostream& os, const ErrorStack& es){
 	os << "Compiler exited with " << es.num() << " errors:" << std::endl;
 	for(auto i:*(es.impl) )
-		os << i;
+		os << *i;
 	os << std::endl;
 	return os;
 }
@@ -63,9 +63,18 @@ void Parser::parse(){
 		std::cout << "Parsing started." << std::endl;
 
 	ast = translation_unit();
-
+	
+	if(errors->num()){
+		std::cerr << *errors << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	
 	if(verbose){
 		std::cout << "Parsing complete." << std::endl;
 		std::cout << *ast << std::endl;
 	}
+}
+
+void Parser::reportInvalidToken(const InvalidTokenException& e){
+	errors->report( Error(e.what(), e.where(), e.when()) );
 }

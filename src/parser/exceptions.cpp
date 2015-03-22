@@ -9,17 +9,23 @@
 #include "parser/exceptions.h"
 
 
-InvalidTokenException::InvalidTokenException(std::string expect, const Token& input)
-: expect(expect), input(input){
+InvalidTokenException::InvalidTokenException(std::string expect, std::string last, const Token& input)
+: expect(expect), last(last), input(input){
 }
 
 InvalidTokenException::~InvalidTokenException(void) throw(){
 }
 
-const char* InvalidTokenException::what() const throw(){
-	return ( input.matched+" is not a valid "+expect
-			+" ("+std::to_string( input.pos.lineNo() )
-			+":"+std::to_string( input.pos.colNo() )+")" ).c_str();
+const char* InvalidTokenException::what(void) const throw(){
+	return ( "expected "+expect+" after "+last ).c_str();
+}
+
+const char* InvalidTokenException::where(void) const{
+	return input.srcfile.c_str();
+}
+
+const SrcPos& InvalidTokenException::when(void) const{
+	return input.pos;
 }
 
 UnexpectedEOFException::UnexpectedEOFException(void){

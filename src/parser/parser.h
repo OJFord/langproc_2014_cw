@@ -40,7 +40,7 @@ private:
 	friend std::ostream& operator<<(std::ostream&, const ErrorStack&);
 };
 
-
+class InvalidTokenException;
 class Parser{
 public:
 	Parser(bool);
@@ -145,6 +145,8 @@ private:
 	FloatingConstant* floating_constant(void);
 	Constant* constant(void);
 
+	void reportInvalidToken(const InvalidTokenException&);
+	
 	Lexer* lexer;
 	SymbolTable& symtbl;
 	ErrorStack* errors;

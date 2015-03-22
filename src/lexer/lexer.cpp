@@ -120,7 +120,7 @@ Token& Lexer::consume(const lexeme& m){
 		}
 	}
 	else{
-		throw InvalidTokenException(Token::name(m), la);
+		throw InvalidTokenException(Token::name(m), "previous symbol", la);
 	}
 	if(verbose)
 		std::cout << *labuf << std::endl;

@@ -15,14 +15,18 @@
 
 class InvalidTokenException: public std::exception{
 public:
-	InvalidTokenException(std::string, const Token&);
+	InvalidTokenException(std::string, std::string, const Token&);
 	~InvalidTokenException(void) throw();
 	
-	virtual const char* what() const throw();
+	virtual const char* what(void) const throw();
+	const char*			where(void) const;
+	const SrcPos&		when(void) const;
 	
 protected:
 	const std::string expect;
+	const std::string last;
 	const Token input;
+
 private:
 };
 
