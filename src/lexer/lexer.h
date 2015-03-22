@@ -44,7 +44,7 @@ public:
 	SymbolTable(void);
 	
 	// Inserts a new symbol to the table within present scope
-	void insert(const Token2&);
+	void insert(Token2);
 	
 	// Returns true iff symbol name exists in the table
 	bool contains(const std::string&) const;

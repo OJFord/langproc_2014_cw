@@ -97,7 +97,7 @@ Token2& Lexer::consume(const lexeme& m){
 	if(verbose)
 		std::cout << "Eating a " << Token2::name(m) << std::endl;
 
-	Token2	tk = Token2(m, Token2::name(m));
+	Token2	tk = Token2(m);
 
 	Token2& la = lookahead(1);
 	if( la.lexID == tk.lexID ){
@@ -107,11 +107,6 @@ Token2& Lexer::consume(const lexeme& m){
 			moreBuffer();
 
 		switch(tk.lexID){
-			case IDENTIFIER:
-				if( !symtbl->contains( matched() ) )
-					symtbl->insert(la);
-				break;
-				
 			// Scope changes
 			case PUNCOP_BRACE_LEFT:
 				std::cout << *symtbl << std::endl;
@@ -158,7 +153,7 @@ void SymbolTable::closeScope(void){
 		pop_back();
 }
 
-void SymbolTable::insert(const Token2& symbol){
+void SymbolTable::insert(Token2 symbol){
 	push_back( new SymbolTableEntry(scope, symbol) );
 }
 	
