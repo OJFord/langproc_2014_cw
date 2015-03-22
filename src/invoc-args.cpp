@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
+#include <algorithm>
 #include "invoc-args.h"
 
 InvocationArguments::InvocationArguments(const int argc, const char** argv)

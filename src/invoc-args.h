@@ -6,7 +6,10 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
-#include <algorithm>
+#ifndef __CARM_Compiler__invoc_args__
+#define __CARM_Compiler__invoc_args__
+
+#include <string>
 
 class InvocationArguments{
 public:
@@ -19,3 +22,5 @@ private:
 	const int argc;
 	const char** argv;
 };
+
+#endif /* defined(__CARM_Compiler__invoc_args__) */
