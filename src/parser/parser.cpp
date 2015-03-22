@@ -30,6 +30,8 @@ void Parser::parse(){
 
 	if(verbose)
 		std::cout << "Parsing complete." << std::endl;
+		std::cout << *ast << std::endl;
+	}
 }
 
 TranslationUnit* Parser::translation_unit(void){

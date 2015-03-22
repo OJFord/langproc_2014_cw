@@ -22,6 +22,7 @@ typedef std::initializer_list<SyntaxTree*> SyntaxTreePtrInitList;
 class SyntaxTree{
 public:
 	SyntaxTree(std::string);
+	SyntaxTree(SyntaxTree*);
 	SyntaxTree(SyntaxTreePtrInitList);
 	
 	static std::string computeRaw(SyntaxTreePtrInitList);
@@ -29,23 +30,27 @@ public:
 	virtual std::string what(void)	const;
 	virtual std::string raw(void)	const;
 
+	// The n-branch tree beneath *this
+	SyntaxTreePtrVector subtree;
+
 protected:
 	const std::string _raw;
-	SyntaxTreePtrVector children;
 	
 private:
+	friend std::ostream& operator<<(std::ostream&, const SyntaxTree&);
 };
 
 class Terminal: public SyntaxTree{
 public:
 	Terminal(const Token2&); 
+	Terminal(const SyntaxTree&);
 	
 	Token2 token(void) const;
 	// Returns terminal name
 	std::string what(void) const;
 
 protected:
-	const Token2 _token;
+	const Token2* _token;
 	const std::string _what;
 
 private:
@@ -66,7 +71,7 @@ private:
 
 class TypeSpecifier: public NonTerminal{
 public:
-	TypeSpecifier(const Terminal*);
+	TypeSpecifier(Terminal*);
 	// structunionspec
 	// enumspec
 	// typedefname

@@ -13,8 +13,12 @@ SyntaxTree::SyntaxTree(std::string raw)
 : _raw(raw){
 }
 
+SyntaxTree::SyntaxTree(SyntaxTree* st)
+: _raw( st->raw() ){
+}
+
 SyntaxTree::SyntaxTree(SyntaxTreePtrInitList sts)
-: _raw( computeRaw(sts) ), children(sts){
+: subtree(sts), _raw( computeRaw(sts) ){
 }
 	
 std::string SyntaxTree::computeRaw(SyntaxTreePtrInitList il){
@@ -32,14 +36,40 @@ std::string SyntaxTree::raw(void)	const{
 	return _raw;
 }
 
+void treePrinterHelper(std::ostream& os,
+	std::string level, const SyntaxTree& st){
+
+	for(unsigned i=0; i<st.subtree.size(); ++i){
+		
+		std::string sublevel = level; sublevel += "."+std::to_string(i+1);
+		os << sublevel << std::string( 20-sublevel.length(), ' ');
+		
+		os << "| " << st.subtree.at(i)->what() << std::endl;
+
+		treePrinterHelper(os, sublevel, *st.subtree.at(i));
+	}
+}
+std::ostream& operator<<(std::ostream& os, const SyntaxTree& st){
+	os << "     Tree level     |             What             " << std::endl;
+	os << std::string(20, '-') << "+" << std::string(30, '-') << std::endl;
+	
+	os << "." << std::string(19, ' ');
+	os << "| " << st.what() << std::endl;
+
+	treePrinterHelper(os, std::string(), st);
+	os << std::endl;
+
+	return os;
+}
+
 Terminal::Terminal(const Token2& tk)
-: SyntaxTree(tk.matched), _token(tk), _what(tk.lexed){
+: SyntaxTree(tk.matched), _token(&tk), _what(tk.lexed){
 	if(what()=="EOF")
 		throw UnexpectedEOFException();
 }
 
 Token2 Terminal::token(void) const{
-	return _token;
+	return *_token;
 }
 
 std::string Terminal::what(void) const{
@@ -54,7 +84,8 @@ NonTerminal::NonTerminal(const SyntaxTreePtrInitList& il)
 : SyntaxTree(il){
 }
 
-TypeSpecifier::TypeSpecifier(const Terminal* t): NonTerminal(*t){
+TypeSpecifier::TypeSpecifier(Terminal* t)
+: NonTerminal( SyntaxTreePtrInitList({t}) ){
 	std::string ts = t->what();
 
 	if(	ts != "KW_VOID"
@@ -80,7 +111,7 @@ std::string TypeSpecifier::what(void) const{
 }
 
 DeclarationSpecifiers::DeclarationSpecifiers(TypeSpecifier* ts)
-: NonTerminal(*ts){
+: NonTerminal( SyntaxTreePtrInitList({ts}) ){
 }
 DeclarationSpecifiers::DeclarationSpecifiers(TypeSpecifier* ts,
 	DeclarationSpecifiers* ds)
@@ -102,13 +133,13 @@ Identifier::Identifier(Token2* tk)
 }
 
 DirectDeclarator::DirectDeclarator(Identifier* i)
-: NonTerminal(*i){
+: NonTerminal( SyntaxTreePtrInitList({i}) ){
 }
 
 // This doesn't create a loop - *d must be enclosed in paren
 //	whereas Declarator(DirectDeclarator*) needs no paren
 DirectDeclarator::DirectDeclarator(Declarator* d)
-: NonTerminal(*d){
+: NonTerminal( SyntaxTreePtrInitList({d}) ){
 }
 
 //d[ce?]
@@ -120,7 +151,7 @@ std::string DirectDeclarator::what(void) const{
 }
 
 Declarator::Declarator(DirectDeclarator* dd)
-: NonTerminal(*dd){
+: NonTerminal( SyntaxTreePtrInitList({dd}) ){
 }
 
 /*
@@ -134,7 +165,7 @@ std::string Declarator::what(void) const{
 }
 
 InitialiserDeclarator::InitialiserDeclarator(Declarator* d)
-: NonTerminal(*d){
+: NonTerminal( SyntaxTreePtrInitList({d}) ){
 }
 
 /*
@@ -150,7 +181,7 @@ std::string InitialiserDeclarator::what(void) const{
 
 InitialiserDeclaratorList::InitialiserDeclaratorList(
 	InitialiserDeclarator* idl)
-: NonTerminal(*idl){
+: NonTerminal( SyntaxTreePtrInitList({idl}) ){
 }
 
 InitialiserDeclaratorList::InitialiserDeclaratorList(
@@ -163,7 +194,7 @@ std::string InitialiserDeclaratorList::what(void) const{
 }
 
 Declaration::Declaration(DeclarationSpecifiers* ds)
-: NonTerminal(*ds){
+: NonTerminal( SyntaxTreePtrInitList({ds}) ){
 }
 
 Declaration::Declaration(DeclarationSpecifiers* ds,
@@ -176,7 +207,7 @@ std::string Declaration::what(void) const{
 }
 
 ExternalDeclaration::ExternalDeclaration(Declaration* d)
-: NonTerminal(*d){
+: NonTerminal( SyntaxTreePtrInitList({d}) ){
 }
 
 //ExternalDeclaration::ExternalDeclaration(FunctionDefinition);
@@ -190,7 +221,7 @@ TranslationUnit::TranslationUnit(TranslationUnit* tu, ExternalDeclaration* ed)
 }
 
 TranslationUnit::TranslationUnit(ExternalDeclaration* ed)
-: NonTerminal(*ed){
+: NonTerminal( SyntaxTreePtrInitList({ed}) ){
 }
 
 std::string TranslationUnit::what(void) const{
