@@ -43,16 +43,16 @@ private:
 
 class Terminal: public SyntaxTree{
 public:
-	Terminal(const Token2&); 
+	Terminal(const Token&);
 	Terminal(const SyntaxTree&);
 	virtual ~Terminal();
 	
-	Token2 token(void) const;
+	Token token(void) const;
 	// Returns terminal name
 	virtual std::string what(void) const;
 
 protected:
-	const Token2* _token;
+	const Token* _token;
 	const std::string _what;
 
 private:
@@ -74,7 +74,7 @@ private:
 
 class Identifier: public Terminal{
 public:
-	Identifier(Token2*);
+	Identifier(Token*);
 	Identifier(Terminal*);
 	
 	std::string what(void) const;
@@ -86,12 +86,14 @@ class FloatingConstant;
 class IntegerConstant;
 class EnumerationConstant;
 class CharacterConstant;
+class WideCharacterConstant;
 class Constant: public Terminal{
 public:
 	Constant(FloatingConstant*);
 	Constant(IntegerConstant*);
 	Constant(EnumerationConstant*);
 	Constant(CharacterConstant*);
+	Constant(WideCharacterConstant*);
 	
 	std::string what(void) const;
 	
@@ -106,8 +108,8 @@ enum floatingtype{
 };
 class FloatingConstant: public Terminal{
 public:
-	FloatingConstant(Token2*);
-	
+	FloatingConstant(Token*);
+
 	static bool isFloat(std::string);
 	static bool isLongDouble(std::string);
 	static bool isDouble(std::string);
@@ -127,7 +129,7 @@ enum integertype{
 };
 class IntegerConstant: public Terminal{
 public:	
-	IntegerConstant(Token2*);
+	IntegerConstant(Token*);
 	
 	static bool isDecimal(std::string);
 	static bool isOctal(std::string);
@@ -165,7 +167,7 @@ private:
 
 class CharacterConstant: public Terminal{
 public:
-	CharacterConstant(Token2*);
+	CharacterConstant(Token*);
 	
 	std::string what(void) const;
 	static int toChar(std::string);
@@ -176,7 +178,7 @@ private:
 
 class WideCharacterConstant: public Terminal{
 public:
-	WideCharacterConstant(Token2*);
+	WideCharacterConstant(Token*);
 
 	std::string what(void) const;
 	static wchar_t toWChar(std::string);
@@ -187,7 +189,7 @@ private:
 
 class StringLiteral: public Terminal{
 public:
-	StringLiteral(Token2*);
+	StringLiteral(Token*);
 	
 	struct string{
 		const char* data;
@@ -205,7 +207,7 @@ private:
 
 class WideStringLiteral: public Terminal{
 public:
-	WideStringLiteral(Token2*);
+	WideStringLiteral(Token*);
 	
 	struct string{
 		const wchar_t* data;
@@ -812,8 +814,6 @@ class DeclarationList;
 class StatementList;
 class CompoundStatement: public NonTerminal{
 public:
-	CompoundStatement(DeclarationList*);
-	CompoundStatement(StatementList*);
 	CompoundStatement(DeclarationList*, StatementList*);
 	
 	std::string what(void) const;
@@ -910,10 +910,8 @@ private:
 
 class FunctionDefinition: public NonTerminal{
 public:
-	FunctionDefinition(Declarator*);
-	FunctionDefinition(DeclarationSpecifiers*, Declarator*);
-	FunctionDefinition(CompoundStatement*);
-	FunctionDefinition(DeclarationList*, CompoundStatement*);
+	FunctionDefinition(DeclarationSpecifiers*, Declarator*,
+					   DeclarationList*, CompoundStatement*);
 	
 	std::string what(void) const;
 	

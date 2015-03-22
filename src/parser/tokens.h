@@ -13,17 +13,27 @@
 #include <map>
 #include "lexer/lex.h"
 
-class Token2{
+class SrcPos: std::pair<size_t, size_t>{
 public:
-	Token2(lexeme);
-	Token2(lexeme, std::string);
+	SrcPos(size_t, size_t);
+	
+	size_t lineNo(void) const;
+	size_t colNo(void) const;
+};
+
+class Token{
+public:
+	Token(lexeme, std::string="main.c", SrcPos=SrcPos(0,0));
+	Token(lexeme, std::string, std::string="main.c", SrcPos=SrcPos(0,0));
 
 	static std::string name(const lexeme&);
-	//static lexeme id(const std::string&);
 
-	const lexeme lexID;
-	const std::string lexed;
-	const std::string matched;
+	const lexeme		lexID;
+	const std::string	lexed;
+	const std::string	matched;
+	
+	const std::string	srcfile;
+	const SrcPos		pos;
 
 private:
 	// Maps enumerated lexemes to their names, pretty-printing & errors ftw

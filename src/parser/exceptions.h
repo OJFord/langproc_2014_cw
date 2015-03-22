@@ -15,14 +15,14 @@
 
 class InvalidTokenException: public std::exception{
 public:
-	InvalidTokenException(std::string, const Token2&);
+	InvalidTokenException(std::string, const Token&);
 	~InvalidTokenException(void) throw();
 	
 	virtual const char* what() const throw();
 	
 protected:
 	const std::string expect;
-	const Token2 input;
+	const Token input;
 private:
 };
 

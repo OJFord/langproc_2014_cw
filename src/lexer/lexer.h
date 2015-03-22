@@ -23,19 +23,19 @@
 
 class SymbolTableEntry{
 public:
-	SymbolTableEntry(unsigned, Token2);
+	SymbolTableEntry(unsigned, Token);
 
 	// Returns value associated with symbols level of scope
 	//	- 0 is global; incremented with each block from there
 	unsigned const& scope(void) const;
 
 	// Returns a reference to the symbol in entry
-	Token2 const& symbol(void) const;
+	Token const& symbol(void) const;
 
 
 private:
 	const unsigned _scope;
-	const Token2 _symbol;
+	const Token _symbol;
 };
 
 class SymbolTable
@@ -44,14 +44,14 @@ public:
 	SymbolTable(void);
 	
 	// Inserts a new symbol to the table within present scope
-	void insert(Token2);
+	void insert(Token);
 	
 	// Returns true iff symbol name exists in the table
 	bool contains(const std::string&) const;
 	
 	// Resolves a symbol name and returns a copy
 	//	- If no symbol with name exists, throws UnknownSymbolException
-	Token2 const& resolve(const std::string&) const;
+	Token const& resolve(const std::string&) const;
 	
 	// Creates new scope level in table, new symbols will be at this level
 	void beginScope(void);
@@ -70,7 +70,7 @@ private:
 
 
 class LookAheadBuffer
-: public std::list<Token2>{
+: public std::list<Token>{
 public:
 private:
 	friend std::ostream& operator<<(std::ostream&, const LookAheadBuffer&);
@@ -84,15 +84,15 @@ public:
 	
 	// Lexes a single token, advancing lookahead buffer
 	//	- equivalent to consume( lookahead(1) );
-	Token2& lexan(void);
+	Token& lexan(void);
 
 	// Looks ahead given number of lexical tokens
 	//	- 1..n tokens are buffered
-	Token2& lookahead(unsigned=1);
+	Token& lookahead(unsigned=1);
 	
 	// Matches and consumes the lexically next token
 	//	- throws UnexpectedTokenException if lexeme does not match
-	Token2& consume(const lexeme&);
+	Token& consume(const lexeme&);
 	
 	// Ptr to symbol table implementation for symbols in scope
 	SymbolTable* symtbl;
@@ -103,6 +103,8 @@ protected:
 
 	// Increases length of lookahead buffer by 1
 	void moreBuffer(void);
+	
+	const std::string srcfile;
 
 private:
 	lexeme last;

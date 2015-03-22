@@ -13,10 +13,38 @@
 #include "parser/syntax-tree.h"
 #include "lexer/lexer.h"
 
+class Error{
+public:
+	Error(std::string, std::string, SrcPos=SrcPos(0,0));
+	
+private:
+	const std::string	what;
+	const std::string	where;
+	const SrcPos		when;
+	
+	friend std::ostream& operator<<(std::ostream&, const Error&);
+};
+
+class ErrorStack{
+public:
+	ErrorStack(void);
+	~ErrorStack(void);
+	
+	size_t num(void) const;
+	void report(const Error&);
+
+protected:
+	std::vector<Error*>* impl;
+	
+private:
+	friend std::ostream& operator<<(std::ostream&, const ErrorStack&);
+};
+
+
 class Parser{
 public:
 	Parser(bool);
-	Parser(bool, const char* filename);
+	Parser(bool, const char*);
 	~Parser(void);
 	
 	void parse();
@@ -109,7 +137,9 @@ private:
 	PrimaryExpression* primary_expression(void);
 
 	StringLiteral* string_literal(void);
+	WideStringLiteral* wide_string_literal(void);
 	CharacterConstant* character_constant(void);
+	WideCharacterConstant* wide_character_constant(void);
 	EnumerationConstant* enumeration_constant(void);
 	IntegerConstant* integer_constant(void);
 	FloatingConstant* floating_constant(void);
@@ -117,6 +147,7 @@ private:
 
 	Lexer* lexer;
 	SymbolTable& symtbl;
+	ErrorStack* errors;
 };
 
 #endif /* defined(__CARM_Compiler__parser__) */

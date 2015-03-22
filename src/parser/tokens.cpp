@@ -8,18 +8,31 @@
 
 #include "parser/tokens.h"
 
-Token2::Token2(lexeme l)
-: lexID(l), lexed( lexname.find(l)->second ), matched("N/A"){
-}
-Token2::Token2(lexeme l, std::string m)
-: lexID(l), lexed( lexname.find(l)->second ), matched(m){
+SrcPos::SrcPos(size_t line, size_t col)
+: std::pair<size_t,size_t>(line,col){
 }
 
-std::string Token2::name(const lexeme& l){
+size_t SrcPos::lineNo(void) const{
+	return first;
+}
+size_t SrcPos::colNo(void) const{
+	return second;
+}
+
+Token::Token(lexeme l, std::string fname, SrcPos pos)
+: lexID(l), lexed( lexname.find(l)->second ),
+	matched("N/A"), srcfile(fname), pos(pos){
+}
+Token::Token(lexeme l, std::string m, std::string fname, SrcPos pos)
+: lexID(l), lexed( lexname.find(l)->second ),
+	matched(m), srcfile(fname), pos(pos){
+}
+
+std::string Token::name(const lexeme& l){
 	return lexname.find(l)->second;
 }
 
-const std::map<lexeme, std::string> Token2::lexname={
+const std::map<lexeme, std::string> Token::lexname={
 	{	LEX_EOF,							"EOF"							},
 	{	KW_AUTO,							"KW_AUTO"						},
 	{	KW_DOUBLE,							"KW_DOUBLE"						},

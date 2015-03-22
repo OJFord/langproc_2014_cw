@@ -66,7 +66,7 @@ std::ostream& operator<<(std::ostream& os, const SyntaxTree& st){
 	return os;
 }
 
-Terminal::Terminal(const Token2& tk)
+Terminal::Terminal(const Token& tk)
 : SyntaxTree(tk.matched), _token(&tk), _what(tk.lexed){
 	if(what()=="EOF")
 		throw UnexpectedEOFException();
@@ -78,7 +78,7 @@ Terminal::~Terminal(){
 	delete _token;
 }
 
-Token2 Terminal::token(void) const{
+Token Terminal::token(void) const{
 	return *_token;
 }
 
@@ -99,7 +99,7 @@ std::string NonTerminal::what(void) const{
 	return "non-terminal";
 }
 
-Identifier::Identifier(Token2* tk)
+Identifier::Identifier(Token* tk)
 : Terminal(*tk){
 	if(tk->lexID != IDENTIFIER)
 		throw InvalidTokenException("Identifier", *tk);
@@ -112,7 +112,27 @@ std::string Identifier::what(void) const{
 	return "identifier";
 }
 
-FloatingConstant::FloatingConstant(Token2* tk)
+Constant::Constant(FloatingConstant* fc)
+: Terminal(fc){
+}
+Constant::Constant(IntegerConstant* ic)
+: Terminal(ic){
+}
+Constant::Constant(EnumerationConstant* ec)
+: Terminal(ec){
+}
+Constant::Constant(CharacterConstant* cc)
+: Terminal(cc){
+}
+Constant::Constant(WideCharacterConstant* wcc)
+: Terminal(wcc){
+}
+
+std::string Constant::what(void) const{
+	return "constant";
+}
+
+FloatingConstant::FloatingConstant(Token* tk)
 :	Terminal(*tk),
 	type(isFloat(tk->matched)
 	?	FLOAT
@@ -150,7 +170,7 @@ std::string FloatingConstant::what(void) const{
 	return "floating constant";
 }
 
-IntegerConstant::IntegerConstant(Token2* tk)
+IntegerConstant::IntegerConstant(Token* tk)
 : Terminal(*tk),
 	type(isInt(tk->matched)
 	?	INT
@@ -259,7 +279,7 @@ std::string EnumerationConstant::what(void) const{
 	return "enumeration constant";
 }
 
-CharacterConstant::CharacterConstant(Token2* tk)
+CharacterConstant::CharacterConstant(Token* tk)
 : Terminal(*tk), val(toChar(tk->matched)){
 }
 	
@@ -273,7 +293,7 @@ std::string CharacterConstant::what(void) const{
 	return "character constant";
 }
 
-WideCharacterConstant::WideCharacterConstant(Token2* tk)
+WideCharacterConstant::WideCharacterConstant(Token* tk)
 : Terminal(tk->matched), val( (wchar_t)*(tk->matched.c_str()) ){
 }
 	
@@ -287,7 +307,7 @@ std::string WideCharacterConstant::what(void) const{
 	return "wide character constant";
 }
 
-StringLiteral::StringLiteral(Token2* tk)
+StringLiteral::StringLiteral(Token* tk)
 : Terminal(*tk), val(toStr(tk->matched).data), size(toStr(tk->matched).len){
 }
 
@@ -304,7 +324,7 @@ std::string StringLiteral::what(void) const{
 	return "string literal";
 }
 
-WideStringLiteral::WideStringLiteral(Token2* tk)
+WideStringLiteral::WideStringLiteral(Token* tk)
 : Terminal(*tk), val(toWStr(tk->matched).data), size(toWStr(tk->matched).len){
 }
 	
@@ -994,12 +1014,6 @@ std::string LabeledStatement::what(void) const{
 	return "labeled statement";
 }
 
-CompoundStatement::CompoundStatement(DeclarationList* dl)
-: NonTerminal( SyntaxTreePtrInitList({dl}) ){
-}
-CompoundStatement::CompoundStatement(StatementList* sl)
-: NonTerminal( SyntaxTreePtrInitList({sl}) ){
-}
 CompoundStatement::CompoundStatement(DeclarationList* dl, StatementList* sl)
 : NonTerminal( SyntaxTreePtrInitList({dl, sl}) ){
 }
@@ -1111,17 +1125,10 @@ std::string TranslationUnit::what(void) const{
 	return "translation unit";
 }
 
-FunctionDefinition::FunctionDefinition(Declarator* d)
-: NonTerminal( SyntaxTreePtrInitList({d}) ){
-}
-FunctionDefinition::FunctionDefinition(DeclarationSpecifiers* ds, Declarator* d)
-: NonTerminal( SyntaxTreePtrInitList({ds, d}) ){
-}
-FunctionDefinition::FunctionDefinition(CompoundStatement* cs)
-: NonTerminal( SyntaxTreePtrInitList({cs}) ){
-}
-FunctionDefinition::FunctionDefinition(DeclarationList* dl, CompoundStatement* cs)
-: NonTerminal( SyntaxTreePtrInitList({dl, cs}) ){
+
+FunctionDefinition::FunctionDefinition(DeclarationSpecifiers* ds, Declarator* d,
+	DeclarationList* dl, CompoundStatement* cs)
+: NonTerminal( SyntaxTreePtrInitList({ds, d, dl, cs}) ){
 }
 
 std::string FunctionDefinition::what(void) const{

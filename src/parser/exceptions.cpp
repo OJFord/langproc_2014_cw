@@ -9,15 +9,17 @@
 #include "parser/exceptions.h"
 
 
-InvalidTokenException::InvalidTokenException(std::string expect, const Token2& raw)
-: expect(expect), input(raw){
+InvalidTokenException::InvalidTokenException(std::string expect, const Token& input)
+: expect(expect), input(input){
 }
 
 InvalidTokenException::~InvalidTokenException(void) throw(){
 }
 
 const char* InvalidTokenException::what() const throw(){
-	return (input.matched+" is not a valid "+expect).c_str();
+	return ( input.matched+" is not a valid "+expect
+			+" ("+std::to_string( input.pos.lineNo() )
+			+":"+std::to_string( input.pos.colNo() )+")" ).c_str();
 }
 
 UnexpectedEOFException::UnexpectedEOFException(void){

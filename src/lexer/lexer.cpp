@@ -17,7 +17,7 @@ std::ostream& operator<<(std::ostream& os, const LookAheadBuffer& lab){
 		k++;
 		std::string name = it.matched;
 		os << name;
-		for(unsigned i=14-name.length(); i!=0; --i)
+		for(size_t i=14-name.length(); i!=0; --i)
 			os << " ";
 		os << "|     " << k << std::endl;
 	}
@@ -26,7 +26,7 @@ std::ostream& operator<<(std::ostream& os, const LookAheadBuffer& lab){
 
 Lexer::Lexer(bool verbose)
 : Scanner(), symtbl(new SymbolTable), verbose(verbose),
-	labuf(new LookAheadBuffer){
+	srcfile("stdio"), labuf(new LookAheadBuffer){
 	if(verbose)
 		std::cout << "Being verbose." << std::endl;
 	moreBuffer();	// init la buffer
@@ -34,7 +34,7 @@ Lexer::Lexer(bool verbose)
 
 Lexer::Lexer(bool verbose, const char* fname)
 : Scanner(), symtbl(new SymbolTable), verbose(verbose),
-	labuf(new LookAheadBuffer){
+	srcfile(fname), labuf(new LookAheadBuffer){
 	if(verbose)
 		std::cout << "Being verbose." << std::endl;
 	switchIstream(fname);
@@ -46,8 +46,8 @@ Lexer::~Lexer(){
 	delete labuf;
 }
 
-Token2& Lexer::lexan(void){
-	Token2& ret = lookahead(1);
+Token& Lexer::lexan(void){
+	Token& ret = lookahead(1);
 	consume(ret.lexID);
 	return ret;
 }
@@ -72,12 +72,12 @@ void Lexer::moreBuffer(void){
 		default:;
 	}
 	last = t;
-	Token2 tk(t, matched());
+	Token tk(t, matched(), srcfile, SrcPos(lineNr(), 0) );	// eeh.. no built in `colNr()`
 	labuf->push_back(tk);
 	std::cout << "Lexed a " << tk.lexed << " on " << matched() << std::endl;
 }
 
-Token2& Lexer::lookahead(unsigned k){
+Token& Lexer::lookahead(unsigned k){
 	if(verbose)
 		std::cout << "Looking ahead " << k << std::endl;
 
@@ -93,13 +93,13 @@ Token2& Lexer::lookahead(unsigned k){
 	return *it--;
 }
 
-Token2& Lexer::consume(const lexeme& m){
+Token& Lexer::consume(const lexeme& m){
 	if(verbose)
-		std::cout << "Eating a " << Token2::name(m) << std::endl;
+		std::cout << "Eating a " << Token::name(m) << std::endl;
 
-	Token2	tk = Token2(m);
+	Token tk = Token(m);
 
-	Token2& la = lookahead(1);
+	Token& la = lookahead(1);
 	if( la.lexID == tk.lexID ){
 		// Ensure buffer is never empty
 		labuf->pop_front();
@@ -120,14 +120,14 @@ Token2& Lexer::consume(const lexeme& m){
 		}
 	}
 	else{
-		throw InvalidTokenException(tk.matched, la);
+		throw InvalidTokenException(Token::name(m), la);
 	}
 	if(verbose)
 		std::cout << *labuf << std::endl;
 	return la;
 }
 
-SymbolTableEntry::SymbolTableEntry(unsigned scope, Token2 sym)
+SymbolTableEntry::SymbolTableEntry(unsigned scope, Token sym)
 : _scope(scope), _symbol(sym){
 }
 
@@ -135,7 +135,7 @@ unsigned const& SymbolTableEntry::scope(void) const{
 	return _scope;
 }
 
-Token2 const& SymbolTableEntry::symbol(void) const{
+Token const& SymbolTableEntry::symbol(void) const{
 	return _symbol;
 }
 
@@ -153,7 +153,7 @@ void SymbolTable::closeScope(void){
 		pop_back();
 }
 
-void SymbolTable::insert(Token2 symbol){
+void SymbolTable::insert(Token symbol){
 	push_back( new SymbolTableEntry(scope, symbol) );
 }
 	
@@ -166,11 +166,11 @@ bool SymbolTable::contains(const std::string& name) const{
 	}
 }
 
-Token2 const& SymbolTable::resolve(const std::string& name) const{
+Token const& SymbolTable::resolve(const std::string& name) const{
 	// probably a fair assumption that symbol is more likely
 	//	in an inner scope, so more effecient to iterate 'backward'
 	for(auto it=rbegin(); it!=rend(); ++it){
-		const Token2& s = (*it)->symbol();
+		const Token& s = (*it)->symbol();
 		if( s.matched == name ){
 			return s;
 		}
@@ -186,7 +186,7 @@ std::ostream& operator<<(std::ostream& os, const SymbolTable& st){
 	// GCC 'internal error reporting bug' if this is made range-based
 	for(auto it=st.begin(); it!=st.end(); ++it){	
 		os << (*it)->symbol().matched;
-		for(unsigned i=14-(*it)->symbol().matched.length(); i!=0; --i)
+		for(size_t i=14-(*it)->symbol().matched.length(); i!=0; --i)
 			os << " ";
 		os << "|     " << (*it)->scope() << std::endl;
 	}
