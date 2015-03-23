@@ -38,7 +38,7 @@ std::ostream& operator<<(std::ostream& os, const ErrorStack& es){
 
 std::ostream& operator<<(std::ostream& os, const Error& e){
 	os << e.where << ":" << e.when.lineNo() << ":" << e.when.colNo();
-	os << ": error: " << e.what;
+	os << ": error: " << e.what << std::endl;
 	return os;
 }
 
