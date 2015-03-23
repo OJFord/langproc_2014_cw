@@ -47,11 +47,12 @@ int main(const int argc, const char* argv[]){
 
 	try{
 		// Naively assume input file is given last
-		parser = new Parser(verbose, argv[argc-1]);
+		parser = new Parser(verbose, &of, argv[argc-1]);
 	} catch(std::out_of_range& e){
 		std::cout << "No input files specified." << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
 	parser->parse();
+	parser->reduce();
 }

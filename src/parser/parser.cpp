@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 OJFord. All rights reserved.
 //
 
+#include <sstream>
 #include "parser/parser.h"
 
 Error::Error(std::string what, std::string where, SrcPos when)
@@ -42,14 +43,14 @@ std::ostream& operator<<(std::ostream& os, const Error& e){
 	return os;
 }
 
-Parser::Parser(bool verbose)
-: verbose(verbose), lexer(new Lexer(verbose)),
+Parser::Parser(bool verbose, std::ofstream* ofile)
+: ofile(ofile), verbose(verbose), lexer(new Lexer(verbose)),
 	symtbl( *(lexer->symtbl) ), errors( new ErrorStack ){
 }
 
 //constructor delegation needs gcc47.. fml
-Parser::Parser(bool verbose, const char* fname)
-: verbose(verbose), lexer(new Lexer(verbose, fname)),
+Parser::Parser(bool verbose, std::ofstream *ofile, const char* fname)
+: ofile(ofile), verbose(verbose), lexer(new Lexer(verbose, fname)),
 	symtbl( *(lexer->symtbl) ), errors( new ErrorStack ){
 }
 
@@ -58,7 +59,7 @@ Parser::~Parser(void){
 	delete ast;
 }
 
-void Parser::parse(){
+void Parser::parse(void){
 	if(verbose)
 		std::cout << "Parsing started." << std::endl;
 
@@ -75,6 +76,12 @@ void Parser::parse(){
 		std::cout << "Parsing complete." << std::endl;
 		std::cout << *ast << std::endl;
 	}
+}
+
+void Parser::reduce(void){
+	std::stringstream ss;
+	ss << ast->reduce();
+	*ofile << ( ss.str() ) << std::endl;
 }
 
 void Parser::reportInvalidToken(const InvalidTokenException& e){

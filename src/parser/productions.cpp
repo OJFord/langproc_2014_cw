@@ -634,10 +634,13 @@ DirectDeclarator* Parser::direct_declarator(void){
 		lexer->consume(PUNCOP_PAREN_RIGHT);
 	}
 	else{
+		Token& tid = lexer->lookahead();
 		Identifier* id = identifier();
 		if(id){
 			if(verbose)
 				std::cout << "Matched " << id->what() << std::endl;
+			
+			symtbl.insert(tid);
 			
 			ddtree = new DirectDeclarator(id);
 			if(verbose && ddtree)

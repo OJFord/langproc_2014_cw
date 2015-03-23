@@ -98,9 +98,8 @@ Token& Lexer::consume(const lexeme& m){
 
 	Token& la = lookahead(1);
 	if( la.lexID == tk.lexID ){
-		// Ensure buffer is never empty
 		labuf->pop_front();
-		if(labuf->empty())
+		if(labuf->empty())			// Ensure buffer is never empty
 			moreBuffer();
 
 		switch(tk.lexID){

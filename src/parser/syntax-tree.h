@@ -27,8 +27,9 @@ public:
 	virtual ~SyntaxTree();
 
 	static std::string computeRaw(SyntaxTreePtrInitList);
-	
+
 	virtual std::string what(void) const;
+	virtual std::string reduce(void);
 	virtual std::string raw(void) const;
 
 	// The n-branch tree beneath *this
@@ -36,7 +37,7 @@ public:
 
 protected:
 	const std::string _raw;
-	
+
 private:
 	friend std::ostream& operator<<(std::ostream&, const SyntaxTree&);
 };
@@ -46,10 +47,12 @@ public:
 	Terminal(const Token&);
 	Terminal(const SyntaxTree&);
 	virtual ~Terminal();
-	
+
 	Token token(void) const;
+
 	// Returns terminal name
 	virtual std::string what(void) const;
+	virtual std::string reduce(void);
 
 protected:
 	const Token* _token;
@@ -68,6 +71,7 @@ public:
 
 	// Returns name of production
 	std::string what(void) const;
+	virtual std::string reduce(void);
 
 private:
 };
@@ -76,8 +80,9 @@ class Identifier: public Terminal{
 public:
 	Identifier(Token*);
 	Identifier(Terminal*);
-	
+
 	std::string what(void) const;
+	std::string reduce(void);
 
 private:
 };
@@ -94,9 +99,10 @@ public:
 	Constant(EnumerationConstant*);
 	Constant(CharacterConstant*);
 	Constant(WideCharacterConstant*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -113,11 +119,13 @@ public:
 	static bool isFloat(std::string);
 	static bool isLongDouble(std::string);
 	static bool isDouble(std::string);
-	
+
 	std::string what(void) const;
+	std::string reduce(void);
+
 	const floatingtype type;
 	const long double val;
-	
+
 private:
 };
 
@@ -128,28 +136,30 @@ enum integertype{
 	ULINT
 };
 class IntegerConstant: public Terminal{
-public:	
+public:
 	IntegerConstant(Token*);
-	
+
 	static bool isDecimal(std::string);
 	static bool isOctal(std::string);
 	static bool isHexadecimal(std::string);
-	
+
 	static int base(std::string);
-	
+
 	static unsigned long int toInt(std::string);
 	static bool isInt(std::string);
-	
+
 	static unsigned long int toUnsignedInt(std::string);
 	static bool isUnsignedInt(std::string);
-	
+
 	static unsigned long int toLongInt(std::string);
 	static bool isLongInt(std::string);
-	
+
 	static unsigned long int toUnsignedLongInt(std::string);
 	static bool isUnsignedLongInt(std::string);
-	
+
 	std::string what(void) const;
+	std::string reduce(void);
+
 	const integertype type;
 	const unsigned long int val;
 
@@ -159,8 +169,9 @@ private:
 class EnumerationConstant: public Terminal{
 public:
 	EnumerationConstant(Identifier*);
-	
+
 	std::string what(void) const;
+	std::string reduce(void);
 
 private:
 };
@@ -168,8 +179,9 @@ private:
 class CharacterConstant: public Terminal{
 public:
 	CharacterConstant(Token*);
-	
+
 	std::string what(void) const;
+	std::string reduce(void);
 	static int toChar(std::string);
 	const int val;
 
@@ -181,6 +193,7 @@ public:
 	WideCharacterConstant(Token*);
 
 	std::string what(void) const;
+	std::string reduce(void);
 	static wchar_t toWChar(std::string);
 	const wchar_t val;
 
@@ -190,13 +203,14 @@ private:
 class StringLiteral: public Terminal{
 public:
 	StringLiteral(Token*);
-	
+
 	struct string{
 		const char* data;
 		const unsigned len;
 	};
-	
+
 	std::string what(void) const;
+	std::string reduce(void);
 	static string toStr(std::string);
 
 	const char* val;
@@ -208,13 +222,14 @@ private:
 class WideStringLiteral: public Terminal{
 public:
 	WideStringLiteral(Token*);
-	
+
 	struct string{
 		const wchar_t* data;
 		const unsigned len;
 	};
-	
+
 	std::string what(void) const;
+	std::string reduce(void);
 	static string toWStr(std::string);
 
 	const wchar_t* val;
@@ -232,7 +247,8 @@ public:
 	PrimaryExpression(Expression*);
 
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -245,9 +261,10 @@ public:
 	PostfixExpression(PostfixExpression*);
 	PostfixExpression(PostfixExpression*, Terminal*, Identifier*);
 	PostfixExpression(PostfixExpression*, Terminal*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -256,9 +273,10 @@ class ArgumentExpressionList: public NonTerminal{
 public:
 	ArgumentExpressionList(AssignmentExpression*);
 	ArgumentExpressionList(ArgumentExpressionList*, AssignmentExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -270,9 +288,10 @@ public:
 	UnaryExpression(Terminal*, UnaryExpression*);
 	UnaryExpression(Terminal*, CastExpression*);
 	UnaryExpression(Terminal*, TypeName*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -280,9 +299,10 @@ class CastExpression: public NonTerminal{
 public:
 	CastExpression(UnaryExpression*);
 	CastExpression(TypeName*, CastExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -290,9 +310,10 @@ class MultiplicativeExpression: public NonTerminal{
 public:
 	MultiplicativeExpression(CastExpression*);
 	MultiplicativeExpression(MultiplicativeExpression*, Terminal*, CastExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -300,9 +321,10 @@ class AdditiveExpression: public NonTerminal{
 public:
 	AdditiveExpression(MultiplicativeExpression*);
 	AdditiveExpression(AdditiveExpression*, Terminal*, MultiplicativeExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -310,9 +332,10 @@ class ShiftExpression: public NonTerminal{
 public:
 	ShiftExpression(AdditiveExpression*);
 	ShiftExpression(ShiftExpression*, Terminal*, AdditiveExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -320,9 +343,10 @@ class RelationalExpression: public NonTerminal{
 public:
 	RelationalExpression(ShiftExpression*);
 	RelationalExpression(RelationalExpression*, Terminal*, ShiftExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -330,9 +354,10 @@ class EqualityExpression: public NonTerminal{
 public:
 	EqualityExpression(RelationalExpression*);
 	EqualityExpression(EqualityExpression*, Terminal*, RelationalExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -340,9 +365,10 @@ class ANDExpression: public NonTerminal{
 public:
 	ANDExpression(EqualityExpression*);
 	ANDExpression(ANDExpression*, EqualityExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -350,9 +376,10 @@ class ExclusiveORExpression: public NonTerminal{
 public:
 	ExclusiveORExpression(ANDExpression*);
 	ExclusiveORExpression(ExclusiveORExpression*, ANDExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -360,9 +387,10 @@ class InclusiveORExpression: public NonTerminal{
 public:
 	InclusiveORExpression(ExclusiveORExpression*);
 	InclusiveORExpression(InclusiveORExpression*, ExclusiveORExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -370,9 +398,10 @@ class LogicalANDExpression: public NonTerminal{
 public:
 	LogicalANDExpression(InclusiveORExpression*);
 	LogicalANDExpression(LogicalANDExpression*, InclusiveORExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -380,9 +409,10 @@ class LogicalORExpression: public NonTerminal{
 public:
 	LogicalORExpression(LogicalANDExpression*);
 	LogicalORExpression(LogicalORExpression*, LogicalANDExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -390,9 +420,10 @@ class ConditionalExpression: public NonTerminal{
 public:
 	ConditionalExpression(LogicalORExpression*);
 	ConditionalExpression(LogicalORExpression*, Expression*, ConditionalExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -400,9 +431,10 @@ class AssignmentExpression: public NonTerminal{
 public:
 	AssignmentExpression(ConditionalExpression*);
 	AssignmentExpression(UnaryExpression*, Terminal*, AssignmentExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -410,18 +442,20 @@ class Expression: public NonTerminal{
 public:
 	Expression(AssignmentExpression*);
 	Expression(Expression*, AssignmentExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
 class ConstantExpression: public NonTerminal{
 public:
 	ConstantExpression(ConditionalExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -431,9 +465,10 @@ class Declaration: public NonTerminal{
 public:
 	Declaration(DeclarationSpecifiers*);
 	Declaration(DeclarationSpecifiers*, InitialiserDeclaratorList*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -448,9 +483,10 @@ public:
 	DeclarationSpecifiers(TypeSpecifier*, DeclarationSpecifiers*);
 	DeclarationSpecifiers(TypeQualifier*);
 	DeclarationSpecifiers(TypeQualifier*, DeclarationSpecifiers*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -459,9 +495,10 @@ class InitialiserDeclaratorList: public NonTerminal{
 public:
 	InitialiserDeclaratorList(InitialiserDeclarator*);
 	InitialiserDeclaratorList(InitialiserDeclarator*, InitialiserDeclaratorList*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -471,18 +508,20 @@ class InitialiserDeclarator: public NonTerminal{
 public:
 	InitialiserDeclarator(Declarator*);
 	InitialiserDeclarator(Declarator*, Initialiser*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
 class StorageClassSpecifier: public NonTerminal{
 public:
 	StorageClassSpecifier(Terminal*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -495,9 +534,10 @@ public:
 	TypeSpecifier(StructOrUnionSpecifier*);
 	TypeSpecifier(EnumerationSpecifier*);
 	TypeSpecifier(TypeDefName*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -507,18 +547,20 @@ class StructOrUnionSpecifier: public NonTerminal{
 public:
 	StructOrUnionSpecifier(StructOrUnion*, Identifier*, StructDeclarationList*);
 	StructOrUnionSpecifier(StructOrUnion*, StructDeclarationList*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
 class StructOrUnion: public NonTerminal{
 public:
 	StructOrUnion(Terminal*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -527,9 +569,10 @@ class StructDeclarationList: public NonTerminal{
 public:
 	StructDeclarationList(StructDeclarationList*);
 	StructDeclarationList(StructDeclarationList*, StructDeclaration*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -540,7 +583,8 @@ public:
 	StructDeclaration(StructQualifierList*, StructDeclaratorList*);
 
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -552,7 +596,8 @@ public:
 	SpecifierQualifierList(TypeQualifier*, SpecifierQualifierList*);
 
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -563,7 +608,8 @@ public:
 	StructDeclaratorList(StructDeclaratorList*, StructDeclarator*);
 
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -575,7 +621,8 @@ public:
 	StructDeclarator(ConstantExpression*);
 
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -585,9 +632,10 @@ public:
 	EnumerationSpecifier(Identifier*);
 	EnumerationSpecifier(Identifier*, EnumeratorList*);
 	EnumerationSpecifier(EnumeratorList*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -596,9 +644,10 @@ class EnumeratorList: public NonTerminal{
 public:
 	EnumeratorList(Enumerator*);
 	EnumeratorList(EnumeratorList*, Enumerator*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -606,18 +655,20 @@ class Enumerator: public NonTerminal{
 public:
 	Enumerator(EnumerationConstant*);
 	Enumerator(EnumerationConstant*, ConstantExpression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
 class TypeQualifier: public Terminal{
 public:
 	TypeQualifier(Terminal*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -629,6 +680,7 @@ public:
 	Declarator(Pointer*, DirectDeclarator*);
 
 	std::string what(void) const;
+	std::string reduce(void);
 
 private:
 };
@@ -644,6 +696,7 @@ public:
 	DirectDeclarator(DirectDeclarator*, IdentifierList*);
 
 	std::string what(void) const;
+	std::string reduce(void);
 
 private:
 };
@@ -653,9 +706,10 @@ class Pointer: public NonTerminal{
 public:
 	Pointer(TypeQualifierList*);
 	Pointer(TypeQualifierList*, Pointer*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -663,9 +717,10 @@ class TypeQualifierList: public NonTerminal{
 public:
 	TypeQualifierList(TypeQualifier*);
 	TypeQualifierList(TypeQualifierList*, TypeQualifier*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -673,9 +728,10 @@ class ParameterList;
 class ParameterTypeList: public NonTerminal{
 public:
 	ParameterTypeList(ParameterList*, bool=false);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -684,9 +740,10 @@ class ParameterList: public NonTerminal{
 public:
 	ParameterList(ParameterDeclaration*);
 	ParameterList(ParameterList*, ParameterDeclaration*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -698,9 +755,10 @@ public:
 	ParameterDeclaration(DeclarationSpecifiers*, Declarator*);
 	ParameterDeclaration(DeclarationSpecifiers*);
 	ParameterDeclaration(DeclarationSpecifiers*, AbstractDeclarator*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -708,9 +766,10 @@ class IdentifierList: public NonTerminal{
 public:
 	IdentifierList(Identifier*);
 	IdentifierList(IdentifierList*, Identifier*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -718,9 +777,10 @@ class TypeName: public NonTerminal{
 public:
 	TypeName(SpecifierQualifierList*);
 	TypeName(SpecifierQualifierList*, AbstractDeclarator*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -730,9 +790,10 @@ public:
 	AbstractDeclarator(Pointer*);
 	AbstractDeclarator(DirectAbstractDeclarator*);
 	AbstractDeclarator(Pointer*, DirectAbstractDeclarator*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -743,18 +804,20 @@ public:
 	DirectAbstractDeclarator(ConstantExpression*);
 	DirectAbstractDeclarator(DirectAbstractDeclarator*, ParameterTypeList*);
 	DirectAbstractDeclarator(ParameterTypeList*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
 class TypeDefName: public Terminal{
 public:
 	TypeDefName(Identifier*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -763,9 +826,10 @@ class Initialiser: public NonTerminal{
 public:
 	Initialiser(AssignmentExpression*);
 	Initialiser(InitialiserList*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -773,9 +837,10 @@ class InitialiserList: public NonTerminal{
 public:
 	InitialiserList(Initialiser*);
 	InitialiserList(InitialiserList*, Initialiser*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -793,9 +858,10 @@ public:
 	Statement(SelectionStatement*);
 	Statement(IterationStatement*);
 	Statement(JumpStatement*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -804,9 +870,10 @@ public:
 	LabeledStatement(Identifier*, Statement*);
 	LabeledStatement(ConstantExpression*, Statement*);
 	LabeledStatement(Statement*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -815,9 +882,10 @@ class StatementList;
 class CompoundStatement: public NonTerminal{
 public:
 	CompoundStatement(DeclarationList*, StatementList*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -827,7 +895,8 @@ public:
 	DeclarationList(DeclarationList*, Declaration*);
 
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -835,18 +904,20 @@ class StatementList: public NonTerminal{
 public:
 	StatementList(Statement*);
 	StatementList(StatementList*, Statement*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
 class ExpressionStatement: public NonTerminal{
 public:
 	ExpressionStatement(Expression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -854,9 +925,10 @@ class SelectionStatement: public NonTerminal{
 public:
 	SelectionStatement(Terminal*, Expression*, Statement*);
 	SelectionStatement(Expression*, Statement*, Statement*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -865,9 +937,10 @@ public:
 	IterationStatement(Statement*, Expression*);	// do
 	IterationStatement(Expression*, Statement*);	// while
 	IterationStatement(Expression*, Expression*, Expression*, Statement*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -876,9 +949,10 @@ public:
 	JumpStatement(Terminal*);
 	JumpStatement(Identifier*);
 	JumpStatement(Expression*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 
@@ -887,8 +961,9 @@ class TranslationUnit: public NonTerminal{
 public:
 	TranslationUnit(ExternalDeclaration*);
 	TranslationUnit(TranslationUnit*, ExternalDeclaration*);
-	
+
 	std::string what(void) const;
+	std::string reduce(void);
 
 private:
 };
@@ -898,8 +973,9 @@ class ExternalDeclaration: public NonTerminal{
 public:
 	ExternalDeclaration(FunctionDefinition*);
 	ExternalDeclaration(Declaration*);
-	
+
 	std::string what(void) const;
+	std::string reduce(void);
 
 private:
 };
@@ -908,9 +984,10 @@ class FunctionDefinition: public NonTerminal{
 public:
 	FunctionDefinition(DeclarationSpecifiers*, Declarator*,
 					   DeclarationList*, CompoundStatement*);
-	
+
 	std::string what(void) const;
-	
+	std::string reduce(void);
+
 private:
 };
 

@@ -9,6 +9,7 @@
 #ifndef __CARM_Compiler__parser__
 #define __CARM_Compiler__parser__
 
+#include <fstream>
 #include "parser/tokens.h"
 #include "parser/syntax-tree.h"
 #include "lexer/lexer.h"
@@ -43,15 +44,21 @@ private:
 class InvalidTokenException;
 class Parser{
 public:
-	Parser(bool);
-	Parser(bool, const char*);
+	Parser(bool, std::ofstream*);
+	Parser(bool, std::ofstream*, const char*);
 	~Parser(void);
 	
+	// Parses input to build ast
 	void parse();
+	
+	// Walks ast, collapsing into fewer blocks of ARM asm
+	void reduce();
 
 protected:
 	// Top of the syntax tree
 	SyntaxTree* ast;
+
+	std::ofstream* ofile;
 
 	// Determines of verbosity of debug info etc
 	bool verbose;
