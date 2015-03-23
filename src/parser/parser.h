@@ -86,7 +86,7 @@ private:
 
 	ParameterDeclaration* parameter_declaration(void);
 	ParameterList* parameter_list(void);
-	ParameterTypeList* paramater_type_list(void);
+	ParameterTypeList* parameter_type_list(void);
 	
 	TypeQualifier* type_qualifier(void);
 	TypeQualifierList* type_qualifier_list(void);

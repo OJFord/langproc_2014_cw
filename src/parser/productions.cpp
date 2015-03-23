@@ -265,13 +265,66 @@ IdentifierList* Parser::identifier_list(void){
 
 
 ParameterDeclaration* Parser::parameter_declaration(void){
-	throw "Not implemented.";
+	DeclarationSpecifiers* dstree = declaration_specifiers();
+	if(!dstree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << dstree->what() << std::endl;
+	
+	Declarator* dtree = declarator();
+	if(dtree){
+		if(verbose)
+			std::cout << "Matched " << dtree->what() << std::endl;
+		return new ParameterDeclaration(dstree, dtree);
+	}
+	else{
+		AbstractDeclarator* adtree = abstract_declarator();
+		if(adtree && verbose)
+			std::cout << "Matched " << adtree->what() << std::endl;
+		
+		// even if abstract_declarator null
+		return new ParameterDeclaration(dstree, adtree);
+	}
 }
 ParameterList* Parser::parameter_list(void){
-	throw "Not implemented.";
+	ParameterDeclaration* pdtree = parameter_declaration();
+	if(!pdtree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << pdtree->what() << std::endl;
+	
+	Token* next = &lexer->lookahead();
+	ParameterList* pltree = new ParameterList(pdtree);
+	while( next->lexID==PUNCOP_COMMA ){
+		lexer->consume(PUNCOP_COMMA);
+		
+		pdtree = parameter_declaration();
+		if(!pdtree)
+			throw InvalidTokenException(
+				pdtree->what(), next->matched, lexer->lookahead() );
+		
+		pltree = new ParameterList(pltree, pdtree);
+		
+		// more?
+		next = &lexer->lookahead();
+	}
+	return pltree;
 }
-ParameterTypeList* Parser::paramater_type_list(void){
-	throw "Not implemented.";
+ParameterTypeList* Parser::parameter_type_list(void){
+	ParameterList* pltree = parameter_list();
+	if(!pltree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << pltree->what() << std::endl;
+	
+	if( lexer->lookahead(1).lexID==PUNCOP_COMMA
+	&&	lexer->lookahead(2).lexID==PUNCOP_ELLIPSIS ){
+		lexer->consume(PUNCOP_COMMA);
+		lexer->consume(PUNCOP_ELLIPSIS);
+		return new ParameterTypeList(pltree, true);
+	}
+	else
+		return new ParameterTypeList(pltree, false);
 }
 
 
@@ -284,10 +337,23 @@ TypeQualifierList* Parser::type_qualifier_list(void){
 
 
 Pointer* Parser::pointer(void){
-	throw "Not implemented.";
+	try{
+		lexer->consume(PUNCOP_MULT);
+	}
+	catch(InvalidTokenException& e){
+		reportInvalidToken(e);
+		return nullptr;
+	}
+	TypeQualifierList* tqltree = type_qualifier_list();
+	if(tqltree && verbose)
+		std::cout << "Matched " << tqltree->what() << std::endl;
+	if( lexer->lookahead().lexID==PUNCOP_MULT )
+		return new Pointer(tqltree, pointer());
+	else
+		return new Pointer(tqltree);
 }
 DirectDeclarator* Parser::direct_declarator(void){
-	DirectDeclarator* dd;
+	DirectDeclarator* ddtree;
 
 	if( lexer->lookahead(1).lexID == PUNCOP_PAREN_LEFT ){
 		lexer->consume(PUNCOP_PAREN_LEFT);
@@ -295,7 +361,7 @@ DirectDeclarator* Parser::direct_declarator(void){
 		Declarator* dtree = declarator();
 		if(verbose && dtree)
 			std::cout << "Matched " << dtree->what() << std::endl;
-		dd = new DirectDeclarator(dtree);
+		ddtree = new DirectDeclarator(dtree);
 		
 		lexer->consume(PUNCOP_PAREN_RIGHT);
 	}
@@ -305,56 +371,56 @@ DirectDeclarator* Parser::direct_declarator(void){
 			if(verbose)
 				std::cout << "Matched " << id->what() << std::endl;
 			
-			dd = new DirectDeclarator(id);
-			if(verbose && dd)
+			ddtree = new DirectDeclarator(id);
+			if(verbose && ddtree)
 				std::cout << "Matched " << id->what() << std::endl;	
 		}
 		else
 			return nullptr;
 	}
-
-	//ConstantExpression* ce;
-	//ParameterTypeList* ptl;
-	//IdentifierList* il;
-	// new lookahead, we already matched&consumed whatever above
-	switch( lexer->lookahead(1).lexID ){
-		case PUNCOP_BRACKET_LEFT:
-			/*lexer->consume(PUNCOP_BRACK_LEFT);
-			ce = constant_expression();
-			lexer->consume(PUNCOP_BRACK_RIGHT);
-			// constant expr optional, so pass even if null since carrys
-			//	the information " `[]` was matched " implicitly
-			return new DirectDeclarator(dd, ce);
-			*/throw "Not implemented";
-
-		case PUNCOP_PAREN_LEFT:
-			/*lexer->consume(PUNCOP_PAREN_LEFT);
-			ptl = parameter_type_list();
-			if(!ptl)
-				il	= identifier_list();
-			lexer->consume(PUNCOP_PAREN_RIGHT);
-			// id list optional, so pass even if null since carrys
-			//	the information " `()` was matched " implicitly
-			return new DirectDeclarator(dd, (ptl)?ptl:il );
-			*/throw "Not implemented";
-
-		default:
-			return dd;
+	
+	Token* next = &lexer->lookahead();
+	while( next->lexID==PUNCOP_BRACKET_LEFT || next->lexID==PUNCOP_PAREN_LEFT ){
+		lexer->consume(next->lexID);
+		
+		if( next->lexID==PUNCOP_BRACKET_LEFT ){
+			ddtree = new DirectDeclarator(ddtree, constant_expression());	// even if null
+		}
+		
+		else{
+			ParameterTypeList* ptltree = parameter_type_list();
+			if(ptltree){
+				if(verbose)
+					std::cout << "Matched " << ptltree->what() << std::endl;
+				ddtree = new DirectDeclarator(ddtree, ptltree);
+			}
+			else{
+				IdentifierList* idltree = identifier_list();
+				if(idltree && verbose)
+					std::cout << "Matched " << idltree->what() << std::endl;
+				ddtree = new DirectDeclarator(ddtree, idltree);	// even if null
+			}
+		}
+		// more?
+		next = &lexer->lookahead();
 	}
+	return ddtree;
 }
 
 Declarator* Parser::declarator(void){
-	//Pointer* ptree = pointer()	// so meta..
+	Pointer* ptree = pointer();				// so meta..
 	
 	DirectDeclarator* ddtree = direct_declarator();
-	if(verbose && ddtree)
+	if(!ddtree){
+		if(!ptree)
+			return nullptr;
+		else
+			throw InvalidTokenException(ddtree->what(), ptree->what(), lexer->lookahead());
+	}
+	else if(verbose)
 		std::cout << "Matched " << ddtree->what() << std::endl;
 	
-	return (ddtree)
-	?	/*(pp)
-		? 	new Declarator(ptree, ddtree)
-		:*/	new Declarator(ddtree)
-	:	nullptr;
+	return new Declarator(ptree, ddtree);	// even if ptree null
 }
 
 
@@ -477,7 +543,22 @@ InitialiserDeclaratorList* Parser::initialiser_declarator_list(void){
 }
 
 DeclarationSpecifiers* Parser::declaration_specifiers(void){
-	//SyntaxTree* scstree= storage_class_specifier();
+	/*
+	StorageClassSpecifier* scstree = storage_class_specifier();
+	if(scstree){
+		
+		DeclarationSpecifiers* dstree = declaration_specifiers();
+		if(verbose){
+			std::cout << "Matched " << scstree->what() << std::endl;
+			if(dstree)
+				std::cout << "Matched " << dstree->what() << std::endl;
+		}
+		
+		return (dstree)
+		?	new DeclarationSpecifiers(scstree, dstree)
+		:	new DeclarationSpecifiers(scstree);
+	}
+	*/
 	TypeSpecifier* tstree = type_specifier();
 	if(tstree){
 		
@@ -492,29 +573,52 @@ DeclarationSpecifiers* Parser::declaration_specifiers(void){
 		?	new DeclarationSpecifiers(tstree, dstree)
 		:	new DeclarationSpecifiers(tstree);
 	}
+	/*
+	TypeQualifier* tqtree = type_qualifier();
+	if(tqtree){
+		
+		DeclarationSpecifiers* dstree = declaration_specifiers();
+		if(verbose){
+			std::cout << "Matched " << tqtree->what() << std::endl;
+			if(dstree)
+				std::cout << "Matched " << dstree->what() << std::endl;
+		}
+		
+		return (dstree)
+		?	new DeclarationSpecifiers(tstree, dstree)
+		:	new DeclarationSpecifiers(tstree);
+	}
+	*/
 	else
 		return nullptr;
-	//SyntaxTree* tqtree = type_qualifier();
-	
-
-	/*if( scstree!=nullptr )
-		return dstree!=nullptr
-		? new DeclarationSpecifiers(scstree, dstree)
-		: new DeclarationSpecifiers(scstree);
-	
-	else*/
-		
-	
-	/*else if( tqtree!=nullptr )
-		return dstree!=nullptr
-		? new DeclarationSpecifiers(tqtree, dstree)
-		: new DeclarationSpecifiers(tqtree);
-	*/
 }
 
 
 Expression* Parser::expression(void){
-	throw "Not implemented.";
+	AssignmentExpression* aetree = assignment_expression();
+	if(!aetree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << aetree->what() << std::endl;
+	
+	Token* next = &lexer->lookahead();
+	Expression* etree = new Expression(aetree);
+	
+	while( next->lexID==PUNCOP_BOOL_AND ){
+		lexer->consume(next->lexID);
+		
+		aetree = assignment_expression();
+		if(!aetree)
+			throw InvalidTokenException(aetree->what(), next->matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << aetree->what() << std::endl;
+		
+		etree = new Expression(etree, aetree);
+		
+		// advance
+		next = &lexer->lookahead();
+	}
+	return etree;
 }
 AssignmentExpression* Parser::assignment_expression(void){
 	UnaryExpression* uetree = unary_expression();
@@ -550,8 +654,15 @@ AssignmentExpression* Parser::assignment_expression(void){
 	}
 }
 
+
 ConstantExpression* Parser::constant_expression(void){
-	throw "Not implemented.";
+	ConditionalExpression* cetree = conditional_expression();
+	if(!cetree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << cetree->what() << std::endl;
+	
+	return new ConstantExpression(cetree);
 }
 ConditionalExpression* Parser::conditional_expression(void){
 	LogicalORExpression* loetree = logical_or_expression();
@@ -593,7 +704,7 @@ LogicalORExpression* Parser::logical_or_expression(void){
 	Token* next = &lexer->lookahead();
 	LogicalORExpression* loetree = new LogicalORExpression(laetree);
 	
-	while( next->lexID==PUNCOP_BIT_AND ){
+	while( next->lexID==PUNCOP_BOOL_AND ){
 		lexer->consume(next->lexID);
 		
 		loetree = logical_or_expression();

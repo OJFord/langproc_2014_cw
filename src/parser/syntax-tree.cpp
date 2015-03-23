@@ -27,8 +27,10 @@ SyntaxTree::~SyntaxTree(){
 
 std::string SyntaxTree::computeRaw(SyntaxTreePtrInitList il){
 	std::string ret;
-	for(auto i:il)
-		ret += " "+i->raw();
+	for(auto i:il){
+		if(i)
+			ret += " "+i->raw();
+	}
 	return ret;
 }
 
@@ -44,13 +46,14 @@ void treePrinterHelper(std::ostream& os,
 	std::string level, const SyntaxTree& st){
 
 	for(size_t i=0; i<st.subtree.size(); ++i){
-		
-		std::string sublevel = level; sublevel += "."+std::to_string(i+1);
-		os << sublevel << std::string( 50-sublevel.length(), ' ');
-		
-		os << "| " << st.subtree.at(i)->what() << std::endl;
+		if(st.subtree.at(i)){
+			std::string sublevel = level; sublevel += "."+std::to_string(i+1);
+			os << sublevel << std::string( 50-sublevel.length(), ' ');
+			
+			os << "| " << st.subtree.at(i)->what() << std::endl;
 
-		treePrinterHelper(os, sublevel, *st.subtree.at(i));
+			treePrinterHelper(os, sublevel, *st.subtree.at(i));
+		}
 	}
 }
 std::ostream& operator<<(std::ostream& os, const SyntaxTree& st){
@@ -831,13 +834,13 @@ DirectDeclarator::DirectDeclarator(Identifier* i)
 DirectDeclarator::DirectDeclarator(Declarator* d)
 : NonTerminal( SyntaxTreePtrInitList({d}) ){
 }
-DirectDeclarator::DirectDeclarator(Declarator* d, ConstantExpression* ce)
+DirectDeclarator::DirectDeclarator(DirectDeclarator* d, ConstantExpression* ce)
 : NonTerminal( SyntaxTreePtrInitList({d, ce}) ){
 }
-DirectDeclarator::DirectDeclarator(Declarator* d, ParameterTypeList* ptl)
+DirectDeclarator::DirectDeclarator(DirectDeclarator* d, ParameterTypeList* ptl)
 : NonTerminal( SyntaxTreePtrInitList({d, ptl}) ){
 }
-DirectDeclarator::DirectDeclarator(Declarator* d, IdentifierList* il)
+DirectDeclarator::DirectDeclarator(DirectDeclarator* d, IdentifierList* il)
 : NonTerminal( SyntaxTreePtrInitList({d, il}) ){
 }
 
@@ -875,6 +878,17 @@ ParameterTypeList::ParameterTypeList(ParameterList* pl, bool vaList)
 
 std::string ParameterTypeList::what(void) const{
 	return "parameter type list";
+}
+
+ParameterList::ParameterList(ParameterDeclaration* pd)
+: NonTerminal( SyntaxTreePtrInitList({pd}) ){
+}
+ParameterList::ParameterList(ParameterList* pl, ParameterDeclaration* pd)
+: NonTerminal( SyntaxTreePtrInitList({pl, pd}) ){
+}
+
+std::string ParameterList::what(void) const{
+	return "parameter list";
 }
 
 ParameterDeclaration::ParameterDeclaration(DeclarationSpecifiers* ds, Declarator* d)

@@ -639,9 +639,9 @@ class DirectDeclarator: public NonTerminal{
 public:
 	DirectDeclarator(Identifier*);
 	DirectDeclarator(Declarator*);
-	DirectDeclarator(Declarator*, ConstantExpression*);
-	DirectDeclarator(Declarator*, ParameterTypeList*);
-	DirectDeclarator(Declarator*, IdentifierList*);
+	DirectDeclarator(DirectDeclarator*, ConstantExpression*);
+	DirectDeclarator(DirectDeclarator*, ParameterTypeList*);
+	DirectDeclarator(DirectDeclarator*, IdentifierList*);
 
 	std::string what(void) const;
 
@@ -672,7 +672,7 @@ private:
 class ParameterList;
 class ParameterTypeList: public NonTerminal{
 public:
-	ParameterTypeList(ParameterList*, bool);
+	ParameterTypeList(ParameterList*, bool=false);
 	
 	std::string what(void) const;
 	

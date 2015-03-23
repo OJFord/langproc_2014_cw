@@ -87,9 +87,6 @@ Token& Lexer::lookahead(unsigned k){
 		if( it==labuf->end() )
 			moreBuffer();
 	}
-
-	if(verbose)
-		std::cout << *labuf << std::endl;
 	return *it--;
 }
 
