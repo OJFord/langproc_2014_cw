@@ -43,10 +43,10 @@ std::string SyntaxTree::what(void) const{
 void treePrinterHelper(std::ostream& os,
 	std::string level, const SyntaxTree& st){
 
-	for(unsigned i=0; i<st.subtree.size(); ++i){
+	for(size_t i=0; i<st.subtree.size(); ++i){
 		
 		std::string sublevel = level; sublevel += "."+std::to_string(i+1);
-		os << sublevel << std::string( 20-sublevel.length(), ' ');
+		os << sublevel << std::string( 50-sublevel.length(), ' ');
 		
 		os << "| " << st.subtree.at(i)->what() << std::endl;
 
@@ -54,10 +54,11 @@ void treePrinterHelper(std::ostream& os,
 	}
 }
 std::ostream& operator<<(std::ostream& os, const SyntaxTree& st){
-	os << "     Tree level     |             What             " << std::endl;
-	os << std::string(20, '-') << "+" << std::string(30, '-') << std::endl;
+	os << std::string(20, ' ') << "Tree level" << std::string(20, ' ');
+	os << "|" << std::string(15, ' ') << "What" << std::string(15, ' ') << std::endl;
+	os << std::string(50, '-') << "+" << std::string(30, '-') << std::endl;
 	
-	os << "." << std::string(19, ' ');
+	os << "." << std::string(49, ' ');
 	os << "| " << st.what() << std::endl;
 
 	treePrinterHelper(os, std::string(), st);

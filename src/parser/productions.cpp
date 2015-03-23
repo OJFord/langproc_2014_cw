@@ -44,8 +44,11 @@ ExternalDeclaration* Parser::external_declaration(void){
 	}
 	else try{
 		FunctionDefinition* fdtree = function_definition();
-		if(verbose)
+		if(!fdtree)
+			return nullptr;
+		else if(verbose)
 			std::cout << "Matched " << fdtree->what() << std::endl;
+		
 		return new ExternalDeclaration(fdtree);
 	}
 	catch(InvalidTokenException& e){
@@ -250,7 +253,7 @@ TypeName* Parser::type_name(void){
 }
 Identifier* Parser::identifier(void){
 	try{
-		Token tk( lexer->consume(IDENTIFIER) );
+		Token& tk = lexer->consume(IDENTIFIER);
 		return new Identifier( new Terminal(tk) );
 	} catch(InvalidTokenException& e){
 		return nullptr;
@@ -528,7 +531,7 @@ AssignmentExpression* Parser::assignment_expression(void){
 		
 		AssignmentExpression* aetree = assignment_expression();
 		if(!aetree)
-			return nullptr;
+			throw InvalidTokenException(aetree->what(), op.matched, lexer->lookahead());
 
 		if(verbose)
 			std::cout << "Matched " << aetree->what() << std::endl;
@@ -581,41 +584,297 @@ ConditionalExpression* Parser::conditional_expression(void){
 
 
 LogicalORExpression* Parser::logical_or_expression(void){
-	throw "Not implemented.";
+	LogicalANDExpression* laetree = logical_and_expression();
+	if(!laetree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << laetree->what() << std::endl;
+	
+	Token* next = &lexer->lookahead();
+	LogicalORExpression* loetree = new LogicalORExpression(laetree);
+	
+	while( next->lexID==PUNCOP_BIT_AND ){
+		lexer->consume(next->lexID);
+		
+		loetree = logical_or_expression();
+		if(!loetree)
+			throw InvalidTokenException(loetree->what(), next->matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << loetree->what() << std::endl;
+		
+		loetree = new LogicalORExpression(loetree, laetree);
+		
+		// advance
+		next = &lexer->lookahead();
+	}
+	return loetree;
 }
 LogicalANDExpression* Parser::logical_and_expression(void){
-	throw "Not implemented.";
+	InclusiveORExpression* ioetree = inclusive_or_expression();
+	if(!ioetree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << ioetree->what() << std::endl;
+	
+	Token* next = &lexer->lookahead();
+	LogicalANDExpression* laetree = new LogicalANDExpression(ioetree);
+	
+	while( next->lexID==PUNCOP_BOOL_AND ){
+		lexer->consume(next->lexID);
+		
+		ioetree = inclusive_or_expression();
+		if(!ioetree)
+			throw InvalidTokenException(ioetree->what(), next->matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << ioetree->what() << std::endl;
+		
+		laetree = new LogicalANDExpression(laetree, ioetree);
+		
+		// advance
+		next = &lexer->lookahead();
+	}
+	return laetree;
 }
 InclusiveORExpression* Parser::inclusive_or_expression(void){
-	throw "Not implemented.";
+	ExclusiveORExpression* xoetree = exclusive_or_expression();
+	if(!xoetree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << xoetree->what() << std::endl;
+	
+	Token* next = &lexer->lookahead();
+	InclusiveORExpression* ioetree = new InclusiveORExpression(xoetree);
+	
+	while( next->lexID==PUNCOP_BIT_OR ){
+		lexer->consume(next->lexID);
+		
+		xoetree = exclusive_or_expression();
+		if(!xoetree)
+			throw InvalidTokenException(xoetree->what(), next->matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << xoetree->what() << std::endl;
+		
+		ioetree = new InclusiveORExpression(ioetree, xoetree);
+		
+		// advance
+		next = &lexer->lookahead();
+	}
+	return ioetree;
 }
 ExclusiveORExpression* Parser::exclusive_or_expression(void){
-	throw "Not implemented.";
+	ANDExpression* aetree = and_expression();
+	if(!aetree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << aetree->what() << std::endl;
+	
+	Token* next = &lexer->lookahead();
+	ExclusiveORExpression* xoetree = new ExclusiveORExpression(aetree);
+	
+	while( next->lexID==PUNCOP_BIT_XOR ){
+		lexer->consume(next->lexID);
+		
+		aetree = and_expression();
+		if(!aetree)
+			throw InvalidTokenException(aetree->what(), next->matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << aetree->what() << std::endl;
+		
+		xoetree = new ExclusiveORExpression(xoetree, aetree);
+		
+		// advance
+		next = &lexer->lookahead();
+	}
+	return xoetree;
 }
 ANDExpression* Parser::and_expression(void){
-	throw "Not implemented.";
+	EqualityExpression* eetree = equality_expression();
+	if(!eetree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << eetree->what() << std::endl;
+	
+	Token* next = &lexer->lookahead();
+	ANDExpression* aetree = new ANDExpression(eetree);
+	
+	while( next->lexID==PUNCOP_BIT_AND ){
+		lexer->consume(next->lexID);
+		
+		eetree = equality_expression();
+		if(!eetree)
+			throw InvalidTokenException(eetree->what(), next->matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << eetree->what() << std::endl;
+		
+		aetree = new ANDExpression(aetree, eetree);
+		
+		// advance
+		next = &lexer->lookahead();
+	}
+	return aetree;
 }
 EqualityExpression* Parser::equality_expression(void){
-	throw "Not implemented.";
+	RelationalExpression* retree = relational_expression();
+	if(!retree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << retree->what() << std::endl;
+	
+	Token* next = &lexer->lookahead();
+	EqualityExpression* eetree = new EqualityExpression(retree);
+	
+	while( next->lexID==PUNCOP_EQUALITY || next->lexID==PUNCOP_NOTEQUALS ){
+		lexer->consume(next->lexID);
+		
+		retree = relational_expression();
+		if(!retree)
+			throw InvalidTokenException(retree->what(), next->matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << retree->what() << std::endl;
+		
+		eetree = new EqualityExpression(eetree, new Terminal(*next), retree);
+		
+		// advance
+		next = &lexer->lookahead();
+	}
+	return eetree;
 }
 RelationalExpression* Parser::relational_expression(void){
-	throw "Not implemented.";
+	ShiftExpression* setree = shift_expression();
+	if(!setree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << setree->what() << std::endl;
+	
+	Token* next = &lexer->lookahead();
+	RelationalExpression* retree = new RelationalExpression(setree);
+	
+	while( next->lexID==PUNCOP_LT || next->lexID==PUNCOP_LT_EQUALS
+		|| next->lexID==PUNCOP_GT || next->lexID==PUNCOP_GT_EQUALS ){
+		lexer->consume(next->lexID);
+		
+		setree = shift_expression();
+		if(!setree)
+			throw InvalidTokenException(setree->what(), next->matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << setree->what() << std::endl;
+		
+		retree = new RelationalExpression(retree, new Terminal(*next), setree);
+		
+		// advance
+		next = &lexer->lookahead();
+	}
+	return retree;
 }
 
 
 ShiftExpression* Parser::shift_expression(void){
-	throw "Not implemented.";
+	AdditiveExpression* aetree = additive_expression();
+	if(!aetree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << aetree->what() << std::endl;
+	
+	Token* next = &lexer->lookahead();
+	ShiftExpression* setree = new ShiftExpression(aetree);
+	
+	while( next->lexID==PUNCOP_SHIFT_LEFT || next->lexID==PUNCOP_SHIFT_RIGHT ){
+		lexer->consume(next->lexID);
+		
+		aetree = additive_expression();
+		if(!aetree)
+			throw InvalidTokenException(aetree->what(), next->matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << aetree->what() << std::endl;
+		
+		setree = new ShiftExpression(setree, new Terminal(*next), aetree);
+		
+		// advance
+		next = &lexer->lookahead();
+	}
+	return setree;
 }
 AdditiveExpression* Parser::additive_expression(void){
-	throw "Not implemented.";
+	MultiplicativeExpression* metree = multiplicative_expression();
+	if(!metree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << metree->what() << std::endl;
+	
+	Token* next = &lexer->lookahead();
+	AdditiveExpression* aetree = new AdditiveExpression(metree);
+	
+	while( next->lexID==PUNCOP_PLUS || next->lexID==PUNCOP_MINUS ){
+		lexer->consume(next->lexID);
+		
+		metree = multiplicative_expression();
+		if(!metree)
+			throw InvalidTokenException(metree->what(), next->matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << metree->what() << std::endl;
+		
+		aetree = new AdditiveExpression(aetree, new Terminal(*next), metree);
+		
+		// advance
+		next = &lexer->lookahead();
+	}
+	return aetree;
 }
 MultiplicativeExpression* Parser::multiplicative_expression(void){
-	throw "Not implemented.";
+	CastExpression* cetree = cast_expression();
+	if(!cetree)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << cetree->what() << std::endl;
+	
+	Token* next = &lexer->lookahead();
+	MultiplicativeExpression* metree = new MultiplicativeExpression(cetree);
+	
+	while( next->lexID==PUNCOP_MULT || next->lexID==PUNCOP_DIV || next->lexID==PUNCOP_MOD ){
+		lexer->consume(next->lexID);
+		
+		cetree = cast_expression();
+		if(!cetree)
+			throw InvalidTokenException(cetree->what(), next->matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << cetree->what() << std::endl;
+		
+		metree = new MultiplicativeExpression(metree, new Terminal(*next), cetree);
+		
+		// advance
+		next = &lexer->lookahead();
+	}
+	return metree;
 }
 
 
 CastExpression* Parser::cast_expression(void){
-	throw "Not implemented.";
+	UnaryExpression* uetree = unary_expression();
+	if(uetree){
+		if(verbose)
+			std::cout << "Matched " << uetree->what() << std::endl;
+		return new CastExpression(uetree);
+	}
+	else if( lexer->lookahead().lexID==PUNCOP_PAREN_LEFT ){
+		Token& tpl = lexer->consume(PUNCOP_PAREN_LEFT);
+		TypeName* tn = type_name();
+		
+		if(!tn)
+			throw InvalidTokenException(tn->what(), tpl.matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << tn->what() << std::endl;
+		
+		Token& tpr = lexer->consume(PUNCOP_PAREN_RIGHT);
+		CastExpression* cetree = cast_expression();
+		if(!cetree)
+			throw InvalidTokenException(cetree->what(), tpr.matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << cetree->what() << std::endl;
+		
+		return new CastExpression(tn, cetree);
+	}
+	else
+		return nullptr;
 }
 UnaryExpression* Parser::unary_expression(void){
 	
@@ -758,11 +1017,16 @@ PostfixExpression* Parser::postfix_expression(void){
 	return pfetree;
 }
 PrimaryExpression* Parser::primary_expression(void){
-	Identifier* id = identifier();
-	if(id){
-		if(verbose)
-			std::cout << "Matched " << id->what() << std::endl;
-		return new PrimaryExpression(id);
+	try{
+		Identifier* id = identifier();
+		if(id){
+			if(verbose)
+				std::cout << "Matched " << id->what() << std::endl;
+			return new PrimaryExpression(id);
+		}
+	}
+	catch(InvalidTokenException& e){
+		reportInvalidToken(e);
 	}
 	
 	Constant* ct = constant();
@@ -778,17 +1042,22 @@ PrimaryExpression* Parser::primary_expression(void){
 			std::cout << "Matched " << sl->what() << std::endl;
 		return new PrimaryExpression(sl);
 	}
-	
-	Token& tpl = lexer->consume(PUNCOP_PAREN_LEFT);
-	Expression* e = expression();
-	if(sl){
-		if(verbose)
-			std::cout << "Matched " << sl->what() << std::endl;
-		lexer->consume(PUNCOP_PAREN_RIGHT);
-		return new PrimaryExpression(sl);
+
+	Token& tpl = lexer->lookahead();
+	if( tpl.lexID==PUNCOP_PAREN_LEFT ){
+		lexer->consume(PUNCOP_PAREN_LEFT);
+		Expression* e = expression();
+		if(e){
+			if(verbose)
+				std::cout << "Matched " << e->what() << std::endl;
+			lexer->consume(PUNCOP_PAREN_RIGHT);
+			return new PrimaryExpression(e);
+		}
+		else
+			throw InvalidTokenException(e->what(), tpl.matched, lexer->lookahead());
 	}
 	else
-		throw InvalidTokenException(e->what(), tpl.matched, lexer->lookahead());
+		return nullptr;
 }
 
 WideStringLiteral* Parser::wide_string_literal(void){
@@ -820,7 +1089,13 @@ CharacterConstant* Parser::character_constant(void){
 		return nullptr;
 }
 EnumerationConstant* Parser::enumeration_constant(void){
-	throw "Not implemented.";
+	Identifier* id = identifier();
+	if(!id)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << id->what() << std::endl;
+	
+	return new EnumerationConstant(id);
 }
 IntegerConstant* Parser::integer_constant(void){
 	Token& tk = lexer->lookahead();

@@ -74,7 +74,7 @@ void Lexer::moreBuffer(void){
 	last = t;
 	Token tk(t, matched(), srcfile, SrcPos(lineNr(), 0) );	// eeh.. no built in `colNr()`
 	labuf->push_back(tk);
-	std::cout << "Lexed a " << tk.lexed << " on " << matched() << std::endl;
+	std::cout << "Lexed " << tk.lexed << " on " << matched() << std::endl;
 }
 
 Token& Lexer::lookahead(unsigned k){
@@ -95,7 +95,7 @@ Token& Lexer::lookahead(unsigned k){
 
 Token& Lexer::consume(const lexeme& m){
 	if(verbose)
-		std::cout << "Eating a " << Token::name(m) << std::endl;
+		std::cout << "Eating " << Token::name(m) << std::endl;
 
 	Token tk = Token(m);
 

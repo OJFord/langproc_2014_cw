@@ -64,7 +64,8 @@ void Parser::parse(){
 
 	ast = translation_unit();
 	
-	if(errors->num()){
+	if(!ast){
+		std::cerr << "Compilation failed." << std::endl;
 		std::cerr << *errors << std::endl;
 		exit(EXIT_FAILURE);
 	}
