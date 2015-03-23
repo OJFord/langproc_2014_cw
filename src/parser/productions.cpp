@@ -36,13 +36,7 @@ TranslationUnit* Parser::translation_unit(void){
 }
 
 ExternalDeclaration* Parser::external_declaration(void){
-	Declaration* dtree = declaration();
-	if(dtree){
-		if(verbose)
-			std::cout << "Matched " << dtree->what() << std::endl;
-		return new ExternalDeclaration(dtree);
-	}
-	else try{
+	try{
 		FunctionDefinition* fdtree = function_definition();
 		if(!fdtree)
 			return nullptr;
@@ -52,10 +46,17 @@ ExternalDeclaration* Parser::external_declaration(void){
 		return new ExternalDeclaration(fdtree);
 	}
 	catch(InvalidTokenException& e){
-		Token tk = lexer->lookahead();
-		errors->report( Error(e.what(), tk.srcfile, tk.pos) );
-		return nullptr;
+		reportInvalidToken(e);
 	}
+	
+	Declaration* dtree = declaration();
+	if(dtree){
+		if(verbose)
+			std::cout << "Matched " << dtree->what() << std::endl;
+		return new ExternalDeclaration(dtree);
+	}
+	else
+		return nullptr;
 }
 
 
@@ -153,15 +154,150 @@ JumpStatement* Parser::jump_statement(void){
 	}
 }
 IterationStatement* Parser::iteration_statement(void){
-	throw "Not implemented.";
+	Token& tk = lexer->lookahead();
+	
+	if(tk.lexID==KW_WHILE){
+		lexer->consume(KW_WHILE);
+		Token& tpl = lexer->consume(PUNCOP_PAREN_LEFT);
+		
+		Expression* etree = expression();
+		if(!etree)
+			throw InvalidTokenException(etree->what(), tpl.matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << etree->what() << std::endl;
+		
+		Token& tpr = lexer->consume(PUNCOP_PAREN_RIGHT);
+		Statement* st = statement();
+		if(!st)
+			throw InvalidTokenException(st->what(), tpr.matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << st->what() << std::endl;
+		
+		return new IterationStatement(etree, st);
+	}
+	else if(tk.lexID==KW_DO){
+		Token& td = lexer->consume(KW_DO);
+		
+		Statement* st = statement();
+		if(!st)
+			throw InvalidTokenException(st->what(), td.matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << st->what() << std::endl;
+		
+		lexer->consume(KW_WHILE);
+		Token& tpl = lexer->consume(PUNCOP_PAREN_LEFT);
+		
+		Expression* etree = expression();
+		if(!etree)
+			throw InvalidTokenException(etree->what(), tpl.matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << etree->what() << std::endl;
+		
+		lexer->consume(PUNCOP_PAREN_RIGHT);
+		lexer->consume(PUNCOP_SEMICOLON);
+		
+		return new IterationStatement(st, etree);
+		
+	}
+	else if(tk.lexID==KW_FOR){
+		lexer->consume(KW_FOR);
+		lexer->consume(PUNCOP_PAREN_LEFT);
+
+		Expression* etree1 = expression();
+		if(etree1 && verbose)
+			std::cout << "Matched " << etree1->what() << std::endl;
+		lexer->consume(PUNCOP_SEMICOLON);
+		
+		Expression* etree2 = expression();
+		if(etree2 && verbose)
+			std::cout << "Matched " << etree2->what() << std::endl;
+		lexer->consume(PUNCOP_SEMICOLON);
+		
+		Expression* etree3 = expression();
+		if(etree3 && verbose)
+			std::cout << "Matched " << etree3->what() << std::endl;
+		Token& tpr = lexer->consume(PUNCOP_PAREN_RIGHT);
+		
+		Statement* st = statement();
+		if(!st)
+			throw InvalidTokenException(st->what(), tpr.matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << st->what() << std::endl;
+		
+		return new IterationStatement(etree1, etree2, etree3, st);
+	}
+	else
+		return nullptr;
 }
-SelectionStatement* Parser::selections_tatement(void){
-	throw "Not implemented.";
+SelectionStatement* Parser::selection_tatement(void){
+	Token& tk = lexer->lookahead();
+	
+	if(tk.lexID==KW_IF){
+		lexer->consume(KW_IF);
+		
+		Token& tpl = lexer->consume(PUNCOP_PAREN_LEFT);
+		Expression* etree = expression();
+		if(!etree)
+			throw InvalidTokenException(etree->what(), tpl.matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << etree->what() << std::endl;
+		Token& tpr = lexer->consume(PUNCOP_PAREN_RIGHT);
+		
+		Statement* ist = statement();
+		if(!ist)
+			throw InvalidTokenException(ist->what(), tpr.matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << ist->what() << std::endl;
+		
+		if( lexer->lookahead().lexID==KW_ELSE ){
+			Token& te = lexer->consume(KW_ELSE);
+			
+			Statement* est = statement();
+			if(!est)
+				throw InvalidTokenException(est->what(), te.matched, lexer->lookahead());
+			else if(verbose)
+				std::cout << "Matched " << est->what() << std::endl;
+			
+			return new SelectionStatement(etree, ist, est);
+		}
+		else
+			return new SelectionStatement(new Terminal(tk), etree, ist);
+	}
+	else if(tk.lexID==KW_SWITCH){
+		lexer->consume(KW_SWITCH);
+		
+		Token& tpl = lexer->consume(PUNCOP_PAREN_LEFT);
+		Expression* etree = expression();
+		if(!etree)
+			throw InvalidTokenException(etree->what(), tpl.matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << etree->what() << std::endl;
+		Token& tpr = lexer->consume(PUNCOP_PAREN_RIGHT);
+		
+		Statement* st = statement();
+		if(!st)
+			throw InvalidTokenException(st->what(), tpr.matched, lexer->lookahead());
+		else if(verbose)
+			std::cout << "Matched " << st->what() << std::endl;
+		
+		return new SelectionStatement(new Terminal(tk), etree, st);
+	}
+	else
+		return nullptr;
 }
 ExpressionStatement* Parser::expression_statement(void){
-	throw "Not implemented.";
+	Expression* etree = expression();
+	if(!etree && lexer->lookahead().lexID!=PUNCOP_SEMICOLON)
+		return nullptr;
+	else if(etree && verbose)
+		std::cout << "Matched " << etree->what() << std::endl;
+	lexer->consume(PUNCOP_SEMICOLON);
+	return new ExpressionStatement(etree);
 }
 CompoundStatement* Parser::compound_statement(void){
+	if(lexer->lookahead().lexID!=PUNCOP_BRACE_LEFT)
+		return nullptr;
+	
 	lexer->consume(PUNCOP_BRACE_LEFT);
 	DeclarationList* dltree = declaration_list();
 	StatementList* sltree = statement_list();
@@ -175,13 +311,119 @@ CompoundStatement* Parser::compound_statement(void){
 	return new CompoundStatement(dltree, sltree);
 }
 LabeledStatement* Parser::labeled_statement(void){
-	throw "Not implemented.";
+	Token& tk = lexer->lookahead();
+	switch(tk.lexID){
+		case IDENTIFIER: {
+			Identifier* id = identifier();
+			
+			if(verbose)
+				std::cout << "Matched " << id->what() << std::endl;
+			Token& tc = lexer->consume(PUNCOP_COLON);
+			
+			Statement* st = statement();
+			if(!st)
+				throw InvalidTokenException(st->what(), tc.matched, lexer->lookahead());
+			else if(verbose)
+				std::cout << "Matched " << st->what() << std::endl;
+			
+			return new LabeledStatement(id, st);
+		}
+			
+		case KW_CASE: {	// ...
+			lexer->consume(KW_CASE);
+			
+			ConstantExpression* cetree = constant_expression();
+			if(!cetree)
+				throw InvalidTokenException(cetree->what(), tk.matched, lexer->lookahead());
+			else if(verbose)
+				std::cout << "Matched " << cetree->what() << std::endl;
+			
+			Token& tc = lexer->consume(PUNCOP_COLON);
+			Statement* st = statement();
+			if(!st)
+				throw InvalidTokenException(st->what(), tc.matched, lexer->lookahead());
+			else if(verbose)
+				std::cout << "Matched " << st->what() << std::endl;
+			
+			return new LabeledStatement(cetree, st);
+		}
+			
+		case KW_DEFAULT: {
+			lexer->consume(KW_DEFAULT);
+			
+			Token& tc = lexer->consume(PUNCOP_COLON);
+			Statement* st = statement();
+			if(!st)
+				throw InvalidTokenException(st->what(), tc.matched, lexer->lookahead());
+			else if(verbose)
+				std::cout << "Matched " << st->what() << std::endl;
+			
+			return new LabeledStatement(st);
+		}
+		
+		default:
+			return nullptr;
+	}
 }
 Statement* Parser::statement(void){
-	throw "Not implemented.";
+	LabeledStatement* lst = labeled_statement();
+	if(lst){
+		if(verbose)
+			std::cout << "Matched " << lst->what() << std::endl;
+		return new Statement(lst);
+	}
+	
+	CompoundStatement* cst = compound_statement();
+	if(cst){
+		if(verbose)
+			std::cout << "Matched " << cst->what() << std::endl;
+		return new Statement(cst);
+	}
+	
+	ExpressionStatement* est = expression_statement();
+	if(est){
+		if(verbose)
+			std::cout << "Matched " << est->what() << std::endl;
+		return new Statement(est);
+	}
+	
+	SelectionStatement* sst = selection_tatement();
+	if(sst){
+		if(verbose)
+			std::cout << "Matched " << sst->what() << std::endl;
+		return new Statement(sst);
+	}
+	
+	IterationStatement* ist = iteration_statement();
+	if(ist){
+		if(verbose)
+			std::cout << "Matched " << ist->what() << std::endl;
+		return new Statement(ist);
+	}
+	
+	JumpStatement* jst = jump_statement();
+	if(jst){
+		if(verbose)
+			std::cout << "Matched " << jst->what() << std::endl;
+		return new Statement(jst);
+	}
+	
+	return nullptr;
 }
 StatementList* Parser::statement_list(void){
-	throw "Not implemented.";
+	Statement* st = statement();
+	if(!st)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << st->what() << std::endl;
+	
+	StatementList* stl = new StatementList(st);
+	st = statement();
+	while(st){
+		stl = new StatementList(stl, st);
+		st = statement();
+	}
+	return stl;
 }
 
 
@@ -329,10 +571,36 @@ ParameterTypeList* Parser::parameter_type_list(void){
 
 
 TypeQualifier* Parser::type_qualifier(void){
-	throw "Not implemented.";
+	Token& tk = lexer->lookahead();
+	
+	switch(tk.lexID){
+		case KW_CONST:
+		case KW_VOLATILE:
+			return new TypeQualifier(new Terminal(tk));
+			
+		default:
+			return nullptr;
+	}
 }
 TypeQualifierList* Parser::type_qualifier_list(void){
-	throw "Not implemented.";
+	TypeQualifier* tq = type_qualifier();
+	if(!tq)
+		return nullptr;
+	else if(verbose)
+		std::cout << "Matched " << tq->what() << std::endl;
+	
+	TypeQualifierList* tql = new TypeQualifierList(tq);
+	if(verbose)
+		std::cout << "Matched " << tql->what() << std::endl;
+	tq = type_qualifier();
+	
+	while(tq){
+		tql = new TypeQualifierList(tql, tq);
+		if(verbose)
+			std::cout << "Matched " << tql->what() << std::endl;
+		tq = type_qualifier();
+	}
+	return tql;
 }
 
 
@@ -494,7 +762,18 @@ TypeSpecifier* Parser::type_specifier(void){
 }
 
 StorageClassSpecifier* Parser::storage_class_specifier(void){
-	throw "Not implemented.";
+	Token& tk = lexer->lookahead();
+	switch(tk.lexID){
+		case KW_TYPEDEF:
+		case KW_EXTERN:
+		case KW_STATIC:
+		case KW_AUTO:
+		case KW_REGISTER:
+			return new StorageClassSpecifier(new Terminal(tk));
+		
+		default:
+			return nullptr;
+	}
 }
 InitialiserDeclarator* Parser::initialiser_declarator(void){
 	Declarator* dtree = declarator();
@@ -548,7 +827,7 @@ InitialiserDeclaratorList* Parser::initialiser_declarator_list(void){
 }
 
 DeclarationSpecifiers* Parser::declaration_specifiers(void){
-	/*
+	
 	StorageClassSpecifier* scstree = storage_class_specifier();
 	if(scstree){
 		
@@ -563,7 +842,7 @@ DeclarationSpecifiers* Parser::declaration_specifiers(void){
 		?	new DeclarationSpecifiers(scstree, dstree)
 		:	new DeclarationSpecifiers(scstree);
 	}
-	*/
+	
 	TypeSpecifier* tstree = type_specifier();
 	if(tstree){
 		
@@ -578,7 +857,7 @@ DeclarationSpecifiers* Parser::declaration_specifiers(void){
 		?	new DeclarationSpecifiers(tstree, dstree)
 		:	new DeclarationSpecifiers(tstree);
 	}
-	/*
+	
 	TypeQualifier* tqtree = type_qualifier();
 	if(tqtree){
 		
@@ -593,7 +872,7 @@ DeclarationSpecifiers* Parser::declaration_specifiers(void){
 		?	new DeclarationSpecifiers(tstree, dstree)
 		:	new DeclarationSpecifiers(tstree);
 	}
-	*/
+	
 	else
 		return nullptr;
 }

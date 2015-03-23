@@ -1088,24 +1088,15 @@ std::string SelectionStatement::what(void) const{
 	return "selection statement";
 }
 
-IterationStatement::IterationStatement(Terminal* t, Statement* s)
-: NonTerminal( SyntaxTreePtrInitList({t, s}) ){
+IterationStatement::IterationStatement(Statement* s, Expression* e)
+: NonTerminal( SyntaxTreePtrInitList({s, e}) ){
 }
-IterationStatement::IterationStatement(Terminal* t, Statement* s, Expression* e)
-: NonTerminal( SyntaxTreePtrInitList({t, s, e}) ){
+IterationStatement::IterationStatement(Expression* e, Statement* s)
+: NonTerminal( SyntaxTreePtrInitList({e, s}) ){
 }
-IterationStatement::IterationStatement(Terminal* t, Expression* e,
-	Statement* s)
-: NonTerminal( SyntaxTreePtrInitList({t, e, s}) ){
-}
-IterationStatement::IterationStatement(Terminal* t, Expression* e1,
-	Expression* e2, Statement* s)
-: NonTerminal( SyntaxTreePtrInitList({t, e1, e2, s}) ){
-}
-
-IterationStatement::IterationStatement(Terminal* t, Expression* e1,
-	Expression* e2, Expression* e3, Statement* s)
-: NonTerminal( SyntaxTreePtrInitList({t, e1, e2, e3, s}) ){
+IterationStatement::IterationStatement(
+	Expression* e1, Expression* e2, Expression* e3, Statement* s)
+: NonTerminal( SyntaxTreePtrInitList({e1, e2, e3, s}) ){
 }
 
 std::string IterationStatement::what(void) const{

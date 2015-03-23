@@ -862,13 +862,9 @@ private:
 
 class IterationStatement: public NonTerminal{
 public:
-	IterationStatement(Terminal*, Statement*);
-	IterationStatement(Terminal*, Statement*, Expression*);
-	IterationStatement(Terminal*, Expression*, Statement*);
-	IterationStatement(Terminal*, Expression*,
-					   Expression*, Statement*);
-	IterationStatement(Terminal*, Expression*,
-					   Expression*, Expression*, Statement*);
+	IterationStatement(Statement*, Expression*);	// do
+	IterationStatement(Expression*, Statement*);	// while
+	IterationStatement(Expression*, Expression*, Expression*, Statement*);
 	
 	std::string what(void) const;
 	

@@ -66,7 +66,7 @@ private:
 	
 	JumpStatement* jump_statement(void);
 	IterationStatement* iteration_statement(void);
-	SelectionStatement* selections_tatement(void);
+	SelectionStatement* selection_tatement(void);
 	ExpressionStatement* expression_statement(void);
 	CompoundStatement* compound_statement(void);
 	LabeledStatement* labeled_statement(void);

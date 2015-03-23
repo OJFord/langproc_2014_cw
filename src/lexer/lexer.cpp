@@ -94,7 +94,7 @@ Token& Lexer::consume(const lexeme& m){
 	if(verbose)
 		std::cout << "Eating " << Token::name(m) << std::endl;
 
-	Token tk = Token(m);
+	Token tk(m);
 
 	Token& la = lookahead(1);
 	if( la.lexID == tk.lexID ){
@@ -117,7 +117,7 @@ Token& Lexer::consume(const lexeme& m){
 		}
 	}
 	else{
-		throw InvalidTokenException(Token::name(m), "previous symbol", la);
+		throw InvalidTokenException(Token::name(m), Token::name(last), la);
 	}
 	if(verbose)
 		std::cout << *labuf << std::endl;
@@ -146,7 +146,7 @@ void SymbolTable::beginScope(void){
 
 void SymbolTable::closeScope(void){
 	scope--;
-	while( back()->scope()>scope && size()!=0 )
+	while( size()>0 && back()->scope()>scope)
 		pop_back();
 }
 
