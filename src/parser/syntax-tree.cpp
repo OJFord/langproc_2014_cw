@@ -29,7 +29,7 @@ std::string SyntaxTree::computeRaw(SyntaxTreePtrInitList il){
 	std::string ret;
 	for(auto i:il){
 		if(i)
-			ret += " "+i->raw();
+			ret += ""+i->raw();
 	}
 	return ret;
 }
@@ -50,7 +50,9 @@ void treePrinterHelper(std::ostream& os,
 			std::string sublevel = level; sublevel += "."+std::to_string(i+1);
 			os << sublevel << std::string( 50-sublevel.length(), ' ');
 			
-			os << "| " << st.subtree.at(i)->what() << std::endl;
+			os << "| " << st.subtree.at(i)->what();
+			os << std::string( 33-st.subtree.at(i)->what().length(), ' ' );
+			os << "| " << st.subtree.at(i)->raw() << std::endl;
 
 			treePrinterHelper(os, sublevel, *st.subtree.at(i));
 		}
@@ -58,11 +60,14 @@ void treePrinterHelper(std::ostream& os,
 }
 std::ostream& operator<<(std::ostream& os, const SyntaxTree& st){
 	os << std::string(20, ' ') << "Tree level" << std::string(20, ' ');
-	os << "|" << std::string(15, ' ') << "What" << std::string(15, ' ') << std::endl;
-	os << std::string(50, '-') << "+" << std::string(30, '-') << std::endl;
+	os << "|" << std::string(15, ' ') << "What" << std::string(15, ' ');
+	os << "|" << std::string(15, ' ') << "Raw" << std::string(15, ' ') << std::endl;
+	os << std::string(50, '-') << "+" << std::string(34, '-');
+	os << "+" << std::string(34, '-') << std::endl;
 	
 	os << "." << std::string(49, ' ');
-	os << "| " << st.what() << std::endl;
+	os << "| " << st.what() << std::string( 33-st.what().length(), ' ' );
+	os << "| " << st.raw() << std::endl;
 
 	treePrinterHelper(os, std::string(), st);
 	os << std::endl;
