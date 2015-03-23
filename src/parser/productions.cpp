@@ -373,7 +373,7 @@ DirectDeclarator* Parser::direct_declarator(void){
 			
 			ddtree = new DirectDeclarator(id);
 			if(verbose && ddtree)
-				std::cout << "Matched " << id->what() << std::endl;	
+				std::cout << "Matched " << ddtree->what() << std::endl;
 		}
 		else
 			return nullptr;
@@ -381,13 +381,16 @@ DirectDeclarator* Parser::direct_declarator(void){
 	
 	Token* next = &lexer->lookahead();
 	while( next->lexID==PUNCOP_BRACKET_LEFT || next->lexID==PUNCOP_PAREN_LEFT ){
-		lexer->consume(next->lexID);
 		
 		if( next->lexID==PUNCOP_BRACKET_LEFT ){
+			lexer->consume(PUNCOP_BRACKET_LEFT);
 			ddtree = new DirectDeclarator(ddtree, constant_expression());	// even if null
+			lexer->consume(PUNCOP_BRACKET_RIGHT);
 		}
 		
 		else{
+			lexer->consume(PUNCOP_PAREN_LEFT);
+			
 			ParameterTypeList* ptltree = parameter_type_list();
 			if(ptltree){
 				if(verbose)
@@ -400,6 +403,8 @@ DirectDeclarator* Parser::direct_declarator(void){
 					std::cout << "Matched " << idltree->what() << std::endl;
 				ddtree = new DirectDeclarator(ddtree, idltree);	// even if null
 			}
+			
+			lexer->consume(PUNCOP_PAREN_RIGHT);
 		}
 		// more?
 		next = &lexer->lookahead();

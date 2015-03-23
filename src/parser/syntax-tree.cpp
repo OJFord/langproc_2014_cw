@@ -20,19 +20,24 @@ SyntaxTree::SyntaxTree(SyntaxTree* st)
 : _raw( st->raw() ){
 }
 SyntaxTree::SyntaxTree(SyntaxTreePtrInitList sts)
-: subtree(sts), _raw( computeRaw(sts) ){
+: subtree(sts), _raw( /*computeRaw(sts)*/ ){
 }
 SyntaxTree::~SyntaxTree(){
 }
 
+/*
 std::string SyntaxTree::computeRaw(SyntaxTreePtrInitList il){
 	std::string ret;
 	for(auto i:il){
-		if(i)
+		if(i && i->raw().length()>0){
 			ret += ""+i->raw();
+			//ret += i->raw()+"";		// all differebt and w/wout space.. wtf
+			//ret += i->raw();
+		}
 	}
 	return ret;
 }
+*/
 
 std::string SyntaxTree::raw(void) const{
 	return _raw;

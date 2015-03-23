@@ -71,6 +71,7 @@ void Parser::parse(){
 	}
 	
 	if(verbose){
+		std::cout << "Matched " << ast->what() << std::endl;
 		std::cout << "Parsing complete." << std::endl;
 		std::cout << *ast << std::endl;
 	}
